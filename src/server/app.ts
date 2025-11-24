@@ -25,7 +25,7 @@ const connectDB = async (): Promise<void> => {
   }
 };
 
-server.get("/healtcheck", async function () {
+server.get("/healthcheck", async function () {
   return { status: "OK" }
 });
 
