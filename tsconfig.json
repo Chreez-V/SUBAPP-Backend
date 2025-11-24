@@ -1,43 +1,22 @@
 {
   "compilerOptions": {
-    // 1. Configuración de Módulos (Crucial para Node.js ESM)
-    // Usamos NodeNext/Node16 para que TypeScript sepa cómo resolver
-    // las importaciones de Node.js, incluyendo librerías CommonJS.
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-
-    // 2. Entorno y Runtime
-    "target": "ES2022", // Usar una versión moderna de ECMAScript
-    "lib": ["ES2022"],   // Incluir las bibliotecas de tipos modernas
-    "types": ["node"],   // Incluir tipos de Node.js
-    
-    // 3. Layout del Proyecto
-    "rootDir": "./src",  // Archivos fuente
-    "outDir": "./dist",  // Archivos compilados
-    "esModuleInterop": true, // Permite importar módulos CJS con import * as
-
-    // 4. Estrictez y Calidad de Código (Mantenemos la mayoría de tus opciones)
-    "strict": true,
-    "noImplicitReturns": true,
-    "noImplicitOverride": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-
-    // 5. Deshabilitar opciones problemáticas para este Stack
-    // ESTAS ERAN EL PROBLEMA PRINCIPAL:
-    "verbatimModuleSyntax": false, // Permitimos que TS ajuste las importaciones (necesario para Fastify/Mongoose)
-    "isolatedModules": false,      // Necesario para algunas declaraciones de tipos
-
-    // Otras configuraciones
-    "moduleDetection": "auto", // Dejar que TS infiera
-    "skipLibCheck": true,      // Siempre bueno para acelerar
+    "outDir": "./dist",
+    "allowJs": true,
+    "target": "ESNext",
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true
-  }
-  // Solo compilar los archivos dentro de la carpeta 'src'
-  //"include": ["src/**/*.ts"] 
+    "inlineSources": true,
+    "sourceRoot": "/",
+    "strict": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "skipLibCheck": true,
+    "strictNullChecks": true
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules"]
 }
