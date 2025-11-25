@@ -18,7 +18,7 @@ project/
 │   ├── 📂 middlewares/         # Middlewares personalizados
 │   ├── 📂 models/              # Esquemas de Mongoose
 │   ├── 📂 plugins/             # Plugins de Fastify
-│   ├── 📂 routes/              # Rutas de la API (posiblemente se migre a plugins)
+│   ├── 📂 api/                 # Rutas de la API
 │   ├── 📂 server/
 │   │   └── app.ts              # Archivo principal de configuración del servidor
 │   ├── 📂 socket/              # Handlers para WebSockets

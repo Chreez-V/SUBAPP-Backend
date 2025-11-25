@@ -5,12 +5,14 @@ interface Envs {
     PORT: number;
     MONGODB_URL: string;
     HOST: string;
+    JWT_SECRET: string;
 }
 
 const envsSchema = z.object({
     PORT: z.coerce.number().min(1),
     MONGODB_URL: z.url(),
     HOST: z.string().min(1),
+    JWT_SECRET: z.string().min(10),
 });
 
 const result = envsSchema.safeParse({ ...process.env });
@@ -37,4 +39,5 @@ export const envs = {
     PORT: envsValidates.PORT,
     MONGODB_URL: envsValidates.MONGODB_URL,
     HOST: envsValidates.HOST,
+    JWT_SECRET: envsValidates.JWT_SECRET,
 }
