@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import mongoose from "mongoose";
 import "dotenv/config";
+import { envs } from "@/config/env.config";
 
 const server = Fastify({
   logger: {
@@ -13,11 +14,8 @@ const server = Fastify({
 // Conexión a MongoDB con Mongoose
 const connectDB = async (): Promise<void> => {
   try {
-    if (!process.env.MONGODB_URL) {
-      throw new Error("MONGODB_URL no está definida en el archivo .env");
-    }
+    await mongoose.connect(envs.MONGODB_URL);
 
-    await mongoose.connect(process.env.MONGODB_URL);
     console.log("✅ Connected to MongoDB Atlas");
   } catch (error) {
     console.error("❌ Error connecting to MongoDB:", error);
@@ -67,13 +65,14 @@ export async function main(): Promise<void> {
     await connectDB();
     
     await server.listen({ 
-      port: Number(process.env.PORT) || 3500,
-      host: process.env.HOST || "0.0.0.0"
+      port: envs.PORT || 3500,
+      host: envs.HOST || "0.0.0.0"
     });
     
-    console.log(`Server ready at http://localhost:${process.env.PORT || 3500}`);
+    console.log(`Server ready at http://localhost:${envs.PORT || 3500}`);
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : 'Unknown error occurred';
+    
     console.error(errorMessage);
     process.exit(1);
   }
