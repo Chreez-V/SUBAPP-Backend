@@ -1,0 +1,22 @@
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: subapp-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - subapp-network
+
+volumes:
+  mongo-data:
+
+networks:
+  subapp-network:
+    driver: bridge
