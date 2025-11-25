@@ -1,20 +1,17 @@
-import Fastify from "fastify";
-import mongoose from "mongoose";
-import "dotenv/config";
-const server = Fastify({
-    logger: {
-        transport: {
-            target: "pino-pretty",
-        }
-    }
-});
-// Conexión a MongoDB con Mongoose
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.main = main;
+const mongoose_1 = __importDefault(require("mongoose"));
+require("dotenv/config");
+const env_config_1 = require("@/config/env.config");
+const app_config_1 = require("@/config/app.config");
+// TODO: Move this to a database config file
 const connectDB = async () => {
     try {
-        if (!process.env.MONGODB_URL) {
-            throw new Error("MONGODB_URL no está definida en el archivo .env");
-        }
-        await mongoose.connect(process.env.MONGODB_URL);
+        await mongoose_1.default.connect(env_config_1.envs.MONGODB_URL);
         console.log("✅ Connected to MongoDB Atlas");
     }
     catch (error) {
@@ -22,45 +19,16 @@ const connectDB = async () => {
         process.exit(1);
     }
 };
-server.get("/healthcheck", async function () {
-    return { status: "OK" };
-});
-server.get("/test-db", async function (_, reply) {
+async function main() {
     try {
-        const connectionState = mongoose.connection.readyState;
-        if (connectionState !== 1) {
-            throw new Error(`Database not connected. State: ${connectionState}`);
-        }
-        if (!mongoose.connection.db) {
-            throw new Error('Database instance not available');
-        }
-        const adminDb = mongoose.connection.db.admin();
-        const serverInfo = await adminDb.command({ ping: 1 });
-        return {
-            status: "Database connected",
-            connection: "MongoDB Atlas with Mongoose",
-            ping: serverInfo,
-            readyState: connectionState
-        };
-    }
-    catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-        this.log.error(`Database test failed: ${errorMessage}`);
-        return reply.status(500).send({
-            error: 'Database connection failed',
-            details: errorMessage
-        });
-    }
-});
-export async function main() {
-    try {
-        // Conectar a la base de datos primero
         await connectDB();
+        const server = await (0, app_config_1.app)();
         await server.listen({
-            port: Number(process.env.PORT) || 3500,
-            host: process.env.HOST || "0.0.0.0"
+            port: env_config_1.envs.PORT || 3500,
+            host: env_config_1.envs.HOST || "0.0.0.0"
         });
-        console.log(`Server ready at http://localhost:${process.env.PORT || 3500}`);
+        console.log(`✅ Swagger docs available at http://localhost:${env_config_1.envs.PORT || 3500}/docs`);
+        console.log(`Server ready at http://localhost:${env_config_1.envs.PORT || 3500}`);
     }
     catch (e) {
         const errorMessage = e instanceof Error ? e.message : 'Unknown error occurred';
