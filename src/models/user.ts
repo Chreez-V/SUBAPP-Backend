@@ -1,10 +1,3 @@
-// TODO CREATE MONGOOSE USER SCHEMA HERE
-
-/*
-🧾 Ticket: Implementar modelos de Usuario con Mongoose
-
-🎯 Objetivo: Crear el modelo User en Mongoose con su respectivo esquema, validaciones, tipos, índices y middlewares necesarios para la aplicación SUBA.
-*/
 import { Schema, model, Document } from 'mongoose'
 import bcrypt from 'bcryptjs'
 
@@ -12,14 +5,22 @@ import bcrypt from 'bcryptjs'
 export interface IUser extends Document {
   fullName: string
   email: string
+  // Nota: Tu contraseña está anidada dentro de 'auth'. 
+  // ¡IMPORTANTE! En tu controlador (auth.controller.ts), debes acceder con 'user.auth.password'
   auth: {
     password: string
   }
   role: 'passenger' | 'driver' | 'admin'
   credit?: number
+  
+  // ✅ CAMPOS PARA EL RESENTEO DE CONTRASEÑA
+  resetPasswordToken?: string
+  resetPasswordExpires?: Date
+
   createdAt: Date
   updatedAt: Date
 
+  // Método para comparar la contraseña
   comparePassword(candidate: string): Promise<boolean>
 }
 
@@ -46,6 +47,7 @@ const UserSchema = new Schema<IUser>(
         type: String,
         required: true,
         minlength: 6,
+        select: false, // previene que se seleccione por defecto
       },
     },
 
@@ -59,27 +61,50 @@ const UserSchema = new Schema<IUser>(
       type: Number,
       default: 0,
     },
+
+    // ✅ CAMPOS AGREGADOS AL SCHEMA
+    resetPasswordToken: { 
+      type: String,
+      required: false 
+    },
+    resetPasswordExpires: { 
+      type: Date,
+      required: false
+    }
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    // SOLUCIÓN AL ERROR 2790: Usamos el transformador para remover la contraseña y la aserción de tipo
+    toJSON: {
+      transform: function (doc, ret) {
+        if (ret.auth) {
+          delete (ret.auth as any).password // Usamos 'as any' para evitar el error de TS
+        }
+        return ret
+      }
+    }
+  }
 )
 
 // Middleware: hash password before save
+// SOLUCIÓN AL ERROR 2349: Se eliminó el argumento 'next' ya que el hook es asíncrono
 UserSchema.pre('save', async function () {
   if (!this.isModified('auth.password')) return
 
-  this.auth.password = await bcrypt.hash(this.auth.password, 10)
+  try {
+    this.auth.password = await bcrypt.hash(this.auth.password, 10)
+  } catch (error: any) {
+    throw error // Lanza la excepción para detener el guardado
+  }
 })
 
 // Compare password for login
 UserSchema.methods.comparePassword = function (candidate: string) {
+  if (!this.auth || !this.auth.password) {
+      // Indica al desarrollador que debe usar .select('+auth.password')
+      throw new Error("Password field is missing. Ensure it's explicitly selected in the query.");
+  }
   return bcrypt.compare(candidate, this.auth.password)
-}
-
-// Remove password from JSON responses
-UserSchema.methods.toJSON = function () {
-  const obj = this.toObject()
-  if (obj.auth) delete obj.auth.password
-  return obj
 }
 
 // Export model
@@ -122,5 +147,6 @@ export const createUser = async (data: {
 
 // Find user by email (for login)
 export const findUserByEmail = async (email: string) => {
-  return User.findOne({ email })
+  // Para poder comparar la contraseña, forzamos la selección del campo
+  return User.findOne({ email }).select('+auth.password')
 }
