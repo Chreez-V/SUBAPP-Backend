@@ -38,7 +38,7 @@ export async function app() {
     transformSpecificationClone: true
   });
 
-  // Funcion nueva para el logout
+  // registrar el plugin de Fastify para manejo de cookies
   await server.register(fastifyCookie, {
     secret: process.env.COOKIE_SECRET, 
     parseOptions: { sameSite: 'lax' }
