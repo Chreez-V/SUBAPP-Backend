@@ -45,7 +45,7 @@ export async function registerController(request: RegisterRequest, reply: Fastif
             message: 'Registro exitoso.',
             token,
             user: newUser,
-        })git 
+        })
 
     } catch (error) {
         console.error('Error durante el registro:', error)
@@ -56,4 +56,5 @@ export async function registerController(request: RegisterRequest, reply: Fastif
         
         return reply.status(500).send({ message: 'Error interno del servidor.' });
     }
+
 }
