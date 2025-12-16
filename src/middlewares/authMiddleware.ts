@@ -27,7 +27,8 @@ export const loginSchema = {
     properties: {
       email: { type: 'string', format: 'email' },
       password: { type: 'string', minLength: 6 }
-    }
+    },
+    description: 'Esquema para la solicitud de inicio de sesión',
   },
   response: {
     200: {
