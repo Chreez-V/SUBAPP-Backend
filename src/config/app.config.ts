@@ -2,7 +2,6 @@ import Fastify from "fastify";
 import { envs } from "./env.config";
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
-import fastifyCookie from '@fastify/cookie';
 import { routes } from "@/api";
 
 export async function app() {
@@ -37,12 +36,7 @@ export async function app() {
     staticCSP: true,
     transformSpecificationClone: true
   });
-
-  // registrar el plugin de Fastify para manejo de cookies
-  await server.register(fastifyCookie, {
-    secret: process.env.COOKIE_SECRET, 
-    parseOptions: { sameSite: 'lax' }
-  });
+ 
 
   await server.register(routes);
 
