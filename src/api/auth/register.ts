@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
-import { registerController } from '../../controllers/auth/userRegister_controller'
+import { registerController } from '../../controllers/auth/userRegister_controller.js'
 
-/**
+/*
  * Define y registra las rutas de autenticación, específicamente la de registro.
  * @param fastify La instancia de Fastify a la que se adjuntarán las rutas.
  */

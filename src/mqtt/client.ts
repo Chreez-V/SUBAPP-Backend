@@ -1,5 +1,5 @@
 import mqtt, { MqttClient, IClientOptions } from "mqtt";
-import { MqttClientOptions, MessageHandler } from "./types";
+import { MqttClientOptions, MessageHandler } from "./types.js";
 
 class MQTTClient {
   private client?: MqttClient;

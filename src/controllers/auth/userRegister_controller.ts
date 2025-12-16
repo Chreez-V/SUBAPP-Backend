@@ -1,5 +1,5 @@
 import { type FastifyRequest, type FastifyReply } from "fastify";
-import { findUserByEmail, createUser } from '../../models/user'
+import { findUserByEmail, createUser } from '../../models/user.js'
 import jwt from 'jsonwebtoken'
 
 interface RegisterBody {

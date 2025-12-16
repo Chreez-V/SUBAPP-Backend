@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import "dotenv/config";
-import { envs } from "../config/env.config";
-import { app } from "../config/app.config";
-import { startMqtt } from "../mqtt/plugins/mqttplugin";
+import { envs } from "../config/env.config.js";
+import { app } from "../config/app.config.js";
+import { startMqtt } from "../mqtt/plugins/mqttplugin.js";
 
 // TODO: Move this to a database config file
 const connectDB = async (): Promise<void> => {

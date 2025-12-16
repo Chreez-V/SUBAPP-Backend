@@ -1,10 +1,10 @@
 import { FastifyInstance } from 'fastify';
-import { forgotPassword, resetPassword } from '../../controllers/auth/ChangePassword_Controller';
+import { forgotPassword, resetPassword } from '../../controllers/auth/ChangePassword_Controller.js';
 import {
   forgotPasswordJsonSchema,
   resetPasswordJsonSchema,
-} from '../../validators/auth.schema';
-import isAuth from '../../middlewares/isAuth';
+} from '../../validators/auth.schema.js';
+import isAuth from '../../middlewares/isAuth.js';
 
 async function changePasswordRoutes(fastify: FastifyInstance) {
   fastify.post(

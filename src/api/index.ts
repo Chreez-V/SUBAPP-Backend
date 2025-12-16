@@ -1,10 +1,10 @@
 import { FastifyInstance } from "fastify";
-import { healthRoutes } from "./health.routes";
-import { databaseRoutes } from "./database.routes";
-import  logoutRoute from "./auth/logout";
-import { LoginRoutes } from "./auth/login";
-import { register } from "./auth/register";
-import changePasswordRoutes from "./auth/change-password";
+import { healthRoutes } from "./health.routes.js";
+import { databaseRoutes } from "./database.routes.js";
+import  logoutRoute from "./auth/logout.js";
+import { LoginRoutes } from "./auth/login.js";
+import { register } from "./auth/register.js";
+import changePasswordRoutes from "./auth/change-password.js";
 
 export async function routes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);

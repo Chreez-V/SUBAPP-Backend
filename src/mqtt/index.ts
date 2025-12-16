@@ -1,2 +1,2 @@
-export * from "./types";
-export { mqttClient } from "./client";
+export * from "./types.js";
+export { mqttClient } from "./client.js";
