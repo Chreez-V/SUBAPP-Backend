@@ -1,4 +1,4 @@
-import { findUserByEmail } from "../../models/user";
+import { findUserByEmail } from "../../models/user.js";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 interface LoginBody {

@@ -1,4 +1,4 @@
-import { mqttClient } from "../client";
+import { mqttClient } from "../client.js";
 
 // Example usage: connect and subscribe to a test topic
 export async function startMqtt() {

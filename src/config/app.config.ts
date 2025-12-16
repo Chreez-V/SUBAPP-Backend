@@ -1,9 +1,9 @@
 import Fastify from "fastify";
-import { envs } from "./env.config";
+import { envs } from "./env.config.js";
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
-import { routes } from "../api";
-import jwtPlugin from "./jwt";
+import { routes } from "../api/index.js";
+import jwtPlugin from "./jwt.js";
 
 export async function app() {
   const server = Fastify({

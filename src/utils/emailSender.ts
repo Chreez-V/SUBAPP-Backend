@@ -1,4 +1,4 @@
-import { transporter } from '../config/mailer';
+import { transporter } from '../config/mailer.js';
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
   // Enlace que el usuario pinchará (ajusta la URL a tu frontend o endpoint)
