@@ -6,6 +6,11 @@ export async function startMqtt() {
 
   mqttClient.subscribe("subapp/driver", (topic, payload) => {
     console.log("Data de bus recibida:", topic, payload.toString());
+    try {
+      mqttClient.publish("subapp/passenger", payload.toString());
+    } catch (err) {
+      console.warn("Could not publish test message", err);
+    }
   });
 
   // publish a test message after connect
