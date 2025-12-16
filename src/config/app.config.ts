@@ -36,6 +36,7 @@ export async function app() {
     staticCSP: true,
     transformSpecificationClone: true
   });
+ 
 
   await server.register(routes);
 
