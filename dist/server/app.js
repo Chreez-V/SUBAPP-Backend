@@ -36,5 +36,7 @@ async function main() {
         process.exit(1);
     }
 }
+//start MQTT example plugin (connects, subscribes, publishes)
+//startMqtt();
 main();
 //# sourceMappingURL=app.js.map

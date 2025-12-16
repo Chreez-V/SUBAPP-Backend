@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import "dotenv/config";
 import { envs } from "@/config/env.config";
 import { app } from "@/config/app.config";
+import { startMqtt } from "@/mqtt/plugins/mqttplugin";
 
 // TODO: Move this to a database config file
 const connectDB = async (): Promise<void> => {
@@ -35,5 +36,8 @@ export async function main(): Promise<void> {
     process.exit(1);
   }
 }
+
+//start MQTT example plugin (connects, subscribes, publishes)
+//startMqtt();
 
 main();

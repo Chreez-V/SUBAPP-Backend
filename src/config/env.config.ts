@@ -1,5 +1,21 @@
-import "dotenv/config";
-import * as z from "zod"
+import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
+import * as z from "zod";
+
+// Try to load .env from project root; if missing, fall back to .example.env
+const envPath = path.resolve(process.cwd(), ".env");
+const examplePath = path.resolve(process.cwd(), ".example.env");
+
+if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+} else if (fs.existsSync(examplePath)) {
+    console.warn(".env not found — loading .example.env as fallback");
+    dotenv.config({ path: examplePath });
+} else {
+    // Last resort: attempt default load (will look for .env in cwd)
+    dotenv.config();
+}
 
 interface Envs {
     PORT: number;
@@ -19,7 +35,7 @@ const result = envsSchema.safeParse({ ...process.env });
 
 if (!result.success) {
     const errorsKeys = Object.keys(z.treeifyError(result.error).properties!);
-    
+
     console.error("❌ Invalid .env or credentials:");
 
     const formatted = result.error.format() as Record<string, { _errors?: string[] }>;
@@ -40,4 +56,4 @@ export const envs = {
     MONGODB_URL: envsValidates.MONGODB_URL,
     HOST: envsValidates.HOST,
     JWT_SECRET: envsValidates.JWT_SECRET,
-}
+};

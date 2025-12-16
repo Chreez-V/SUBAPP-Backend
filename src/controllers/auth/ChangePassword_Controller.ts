@@ -2,16 +2,16 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { v4 as uuidv4 } from 'uuid'; // Para generar un token único
 import bcrypt from 'bcryptjs';
 // 💡 CORRECCIÓN 1 & 2: Cambiado a Named Import ({ User }) y corregida la ruta a minúsculas ('../models/user')
-import { User } from '../models/user'; 
-import { sendPasswordResetEmail } from '../utils/emailSender';
-import { ForgotPasswordInput, ResetPasswordInput } from '../validators/auth.schema';
+import { User } from '../../models/user'; 
+import { sendPasswordResetEmail } from '../../utils/emailSender';
+import { ForgotPasswordInput, ResetPasswordInput } from '../../validators/auth.schema';
 
 // --- Paso 1: Solicitar cambio de contraseña ---
 export const forgotPassword = async (
-  request: FastifyRequest<{ Body: ForgotPasswordInput }>,
+  request: FastifyRequest,
   reply: FastifyReply
 ) => {
-  const { email } = request.body;
+  const { email } = request.body as ForgotPasswordInput;
 
   try {
     // Para que Mongoose pueda buscar el usuario por email
@@ -46,10 +46,10 @@ export const forgotPassword = async (
 
 // --- Paso 2: Crear la nueva contraseña ---
 export const resetPassword = async (
-  request: FastifyRequest<{ Body: ResetPasswordInput }>,
+  request: FastifyRequest,
   reply: FastifyReply
 ) => {
-  const { token, newPassword } = request.body;
+  const { token, newPassword } = request.body as ResetPasswordInput;
 
   try {
     // Buscar usuario por token y verificar que no haya expirado ($gt = greater than)
@@ -63,10 +63,9 @@ export const resetPassword = async (
       return reply.code(400).send({ error: 'Token inválido o expirado' });
     }
 
-    // Encriptar nueva contraseña
-    const salt = await bcrypt.genSalt(10);
+
     // 💡 CORRECCIÓN 3: La contraseña está anidada en 'auth'
-    user.auth.password = await bcrypt.hash(newPassword, salt);
+    user.auth.password = newPassword;
 
     // Limpiar el token para que no se pueda reusar
     user.resetPasswordToken = undefined;

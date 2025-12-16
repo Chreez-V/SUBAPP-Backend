@@ -3,6 +3,7 @@ import { envs } from "./env.config";
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import { routes } from "@/api";
+import jwtPlugin from "./jwt";
 
 export async function app() {
   const server = Fastify({
@@ -36,7 +37,8 @@ export async function app() {
     staticCSP: true,
     transformSpecificationClone: true
   });
-
+ 
+  await server.register(jwtPlugin); 
   await server.register(routes);
 
   return server;
