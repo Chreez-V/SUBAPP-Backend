@@ -1,5 +1,5 @@
-import { LoginController } from "@/controllers/auth/LoginController";
-import { createJwtMiddleware, loginSchema } from "@/middlewares/authMiddleware";
+import { LoginController } from "../../controllers/auth/LoginController";
+import { createJwtMiddleware, loginSchema } from "../../middlewares/authMiddleware";
 import { FastifyInstance } from "fastify";
 
 export async function LoginRoutes(fastify: FastifyInstance) {

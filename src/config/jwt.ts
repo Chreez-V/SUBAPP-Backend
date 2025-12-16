@@ -1,7 +1,7 @@
 import fp from 'fastify-plugin';
 import fastifyJwt from '@fastify/jwt';
 import { FastifyReply, FastifyRequest } from "fastify";
-import { envs } from "@/config/env.config";
+import { envs } from "./env.config";
 
 export default fp(async (fastify, _opts) => {
   fastify.register(fastifyJwt, {

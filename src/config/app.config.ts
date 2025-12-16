@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import { envs } from "./env.config";
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
-import { routes } from "@/api";
+import { routes } from "../api";
 import jwtPlugin from "./jwt";
 
 export async function app() {
