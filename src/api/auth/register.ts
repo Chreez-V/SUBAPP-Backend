@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-import { registerController } from '../../controllers/userRegister_controller'
+import { registerController } from '../../controllers/auth/userRegister_controller'
 
 /**
  * Define y registra las rutas de autenticación, específicamente la de registro.

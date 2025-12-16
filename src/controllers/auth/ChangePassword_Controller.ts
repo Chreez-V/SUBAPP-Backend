@@ -2,9 +2,9 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { v4 as uuidv4 } from 'uuid'; // Para generar un token único
 import bcrypt from 'bcryptjs';
 // 💡 CORRECCIÓN 1 & 2: Cambiado a Named Import ({ User }) y corregida la ruta a minúsculas ('../models/user')
-import { User } from '../models/user'; 
-import { sendPasswordResetEmail } from '../utils/emailSender';
-import { ForgotPasswordInput, ResetPasswordInput } from '../validators/auth.schema';
+import { User } from '../../models/user'; 
+import { sendPasswordResetEmail } from '../../utils/emailSender';
+import { ForgotPasswordInput, ResetPasswordInput } from '../../validators/auth.schema';
 
 // --- Paso 1: Solicitar cambio de contraseña ---
 export const forgotPassword = async (

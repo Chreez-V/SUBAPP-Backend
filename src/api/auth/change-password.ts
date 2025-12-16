@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { forgotPassword, resetPassword } from '@/controllers/auth.controller';
+import { forgotPassword, resetPassword } from '@/controllers/auth/ChangePassword_Controller';
 import {
   forgotPasswordJsonSchema,
   resetPasswordJsonSchema,

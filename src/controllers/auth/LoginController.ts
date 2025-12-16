@@ -6,7 +6,7 @@ interface LoginBody {
   password: string;
 }
 
-export class AuthController {
+export class LoginController {
     static async login(request: FastifyRequest<{ Body: LoginBody }>, reply: FastifyReply) {
 
     const { email, password } = request.body 
