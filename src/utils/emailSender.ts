@@ -1,14 +1,13 @@
-
-import { transporter } from '../config/mailer.js';
+import { sgMail } from '../config/mailer.js';
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
-  // Enlace que el usuario pinchará (ajusta la URL a tu frontend o endpoint)
   const resetUrl = `http://localhost:3500/reset-password/${token}`;
 
-  const mailOptions = {
-    from: '"Soporte" <no-reply@tuapp.com>',
+  const msg = {
     to: email,
+    from: 'subappve@gmail.com', // change to a verified sender in SendGrid
     subject: 'Recuperación de contraseña',
+    text: `Has solicitado un cambio de contraseña. Visita el siguiente enlace para cambiar tu contraseña: ${resetUrl}`,
     html: `
       <h1>Restablecer Contraseña</h1>
       <p>Has solicitado un cambio de contraseña. Haz clic en el siguiente enlace:</p>
@@ -18,10 +17,10 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(msg);
     return true;
   } catch (error) {
-    console.error("Error enviando correo:", error);
+    console.error('Error enviando correo con SendGrid:', error);
     return false;
   }
 };
