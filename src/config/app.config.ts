@@ -14,6 +14,11 @@ export async function app() {
     },
   });
 
+  const isProduction = process.env.NODE_ENV === 'production';
+  const swaggerServerUrl = isProduction
+    ? 'https://subapp-api.onrender.com/'
+    : `http://localhost:${envs.PORT || 3500}`;
+
   await server.register(fastifySwagger, {
     openapi: {
       openapi: '3.0.0',
@@ -22,9 +27,18 @@ export async function app() {
         version: '1.0.0'
       },
       servers: [{
-        url: `http://localhost:${envs.PORT || 3500}`,
-        description: 'local'
+        url: swaggerServerUrl,
+        description: isProduction ? 'production' : 'local'
       }],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
     },
   });
 

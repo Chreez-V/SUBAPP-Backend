@@ -11,9 +11,11 @@ async function changePasswordRoutes(fastify: FastifyInstance) {
     '/forgot-password',
     {
       schema: {
-        body: forgotPasswordJsonSchema,   
+        tags: ['Auth'],
+        description: 'Solicitar enlace para restablecer contraseña',
+        body: forgotPasswordJsonSchema,
       },
-        preHandler: [isAuth],
+      preHandler: [isAuth],
     },
     forgotPassword
   );
@@ -22,9 +24,11 @@ async function changePasswordRoutes(fastify: FastifyInstance) {
     '/reset-password',
     {
       schema: {
-        body: resetPasswordJsonSchema,    
+        tags: ['Auth'],
+        description: 'Restablecer contraseña usando token recibido por correo',
+        body: resetPasswordJsonSchema,
       },
-        preHandler: [isAuth],
+      preHandler: [isAuth],
     },
     resetPassword
   );
