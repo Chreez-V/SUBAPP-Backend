@@ -150,3 +150,31 @@ export const findUserByEmail = async (email: string) => {
   // Para poder comparar la contraseña, forzamos la selección del campo
   return User.findOne({ email }).select('+auth.password')
 }
+
+// Get passengers with optional filters
+export const getPassengers = async (filters: {
+  email?: string
+  fullName?: string
+  creditMin?: number
+  creditMax?: number
+}) => {
+  const query: any = { role: 'passenger' }
+
+  if (filters.email) {
+    query.email = { $regex: filters.email, $options: 'i' }
+  }
+  if (filters.fullName) {
+    query.fullName = { $regex: filters.fullName, $options: 'i' }
+  }
+  if (filters.creditMin !== undefined || filters.creditMax !== undefined) {
+    query.credit = {}
+    if (filters.creditMin !== undefined) {
+      query.credit.$gte = filters.creditMin
+    }
+    if (filters.creditMax !== undefined) {
+      query.credit.$lte = filters.creditMax
+    }
+  }
+
+  return User.find(query).select('-auth.password').lean()
+}
