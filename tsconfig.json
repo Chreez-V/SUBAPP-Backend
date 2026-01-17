@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "allowJs": true,
+    "module": "ESNext",
+    "target": "ESNext",
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "rootDir":"./src",
+    "sourceRoot": "/",
+    "strict": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "skipLibCheck": true,
+    "strictNullChecks": true
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules"]
+}
