@@ -6,6 +6,7 @@ import { LoginRoutes } from "./auth/login.js";
 import { register } from "./auth/register.js";
 import changePasswordRoutes from "./auth/change-password.js";
 import { usersRoutes } from "./auth/delete.js";
+import { driversRoutes } from "./drivers/drivers.routes";
 
 export async function routes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);
@@ -25,5 +26,5 @@ export async function routes(fastify: FastifyInstance) {
   });
 
   await fastify.register(usersRoutes,{prefix:'/auth'});
-
+  await fastify.register(driversRoutes,{prefix:'/api/drivers'});
 }
