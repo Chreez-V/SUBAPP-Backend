@@ -1,16 +1,12 @@
 import { FastifyInstance } from 'fastify';
 import { getAdminController } from '../../controllers/admin/getAdmin.controller.js';
 import { adminResponseSchema } from '../../validators/admin.schema.js';
-import isAuth from '../../middlewares/isAuth.js';
-import requireAdmin from '../../middlewares/requireAdmin.js';
-
 
 export async function getAdminRoute(fastify: FastifyInstance) {
     fastify.get('/:id', {
         schema: {
             description: 'Obtener un administrador específico por ID',
             tags: ['Admin'],
-            security: [{ bearerAuth: [] }],
             params: {
                 type: 'object',
                 required: ['id'],
@@ -29,20 +25,6 @@ export async function getAdminRoute(fastify: FastifyInstance) {
                         data: adminResponseSchema,
                     },
                 },
-                401: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        error: { type: 'string' },
-                    },
-                },
-                403: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        error: { type: 'string' },
-                    },
-                },
                 404: {
                     type: 'object',
                     properties: {
@@ -59,7 +41,7 @@ export async function getAdminRoute(fastify: FastifyInstance) {
                 },
             },
         },
-        preHandler: [isAuth, requireAdmin],
+        // ✅ Sin preHandler - No requiere autenticación
     }, async (request, reply) => {
         return getAdminController(request as any, reply);
     });

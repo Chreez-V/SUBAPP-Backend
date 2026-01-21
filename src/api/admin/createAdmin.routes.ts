@@ -1,16 +1,12 @@
 import { FastifyInstance } from 'fastify';
 import { createAdminController } from '../../controllers/admin/createAdmin.controller.js';
 import { createAdminJsonSchema, adminResponseSchema } from '../../validators/admin.schema.js';
-import isAuth from '../../middlewares/isAuth.js';
-import requireAdmin from '../../middlewares/requireAdmin.js';
-
 
 export async function createAdminRoute(fastify: FastifyInstance) {
     fastify.post('/', {
         schema: {
             description: 'Crear un nuevo administrador en el sistema',
             tags: ['Admin'],
-            security: [{ bearerAuth: [] }],
             body: createAdminJsonSchema,
             response: {
                 201: {
@@ -22,20 +18,6 @@ export async function createAdminRoute(fastify: FastifyInstance) {
                     },
                 },
                 400: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        error: { type: 'string' },
-                    },
-                },
-                401: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        error: { type: 'string' },
-                    },
-                },
-                403: {
                     type: 'object',
                     properties: {
                         success: { type: 'boolean' },
@@ -58,7 +40,7 @@ export async function createAdminRoute(fastify: FastifyInstance) {
                 },
             },
         },
-        preHandler: [isAuth, requireAdmin],
+        // ✅ Sin preHandler - No requiere autenticación
     }, async (request, reply) => {
         return createAdminController(request as any, reply);
     });

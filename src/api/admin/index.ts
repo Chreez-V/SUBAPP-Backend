@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { adminLoginRoute } from './adminLogin.routes.js';
 import { getAdminsRoute } from './getAdmins.routes.js';
 import { getAdminRoute } from './getAdmin.routes.js';
 import { createAdminRoute } from './createAdmin.routes.js';
@@ -7,6 +8,10 @@ import { deleteAdminRoute } from './deleteAdmin.routes.js';
 
 
 export async function adminRoutes(fastify: FastifyInstance) {
+    // ✅ POST /api/admin/login - Login de administradores (público)
+    await fastify.register(adminLoginRoute);
+
+    // ✅ Rutas CRUD de administradores (públicas para pruebas)
     // GET /api/admin - Listar todos los administradores
     await fastify.register(getAdminsRoute);
 

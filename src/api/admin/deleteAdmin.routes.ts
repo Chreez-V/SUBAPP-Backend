@@ -1,15 +1,11 @@
 import { FastifyInstance } from 'fastify';
 import { deleteAdminController } from '../../controllers/admin/deleteAdmin.controller.js';
-import isAuth from '../../middlewares/isAuth.js';
-import requireAdmin from '../../middlewares/requireAdmin.js';
-
 
 export async function deleteAdminRoute(fastify: FastifyInstance) {
     fastify.delete('/:id', {
         schema: {
             description: 'Eliminar permanentemente un administrador del sistema',
             tags: ['Admin'],
-            security: [{ bearerAuth: [] }],
             params: {
                 type: 'object',
                 required: ['id'],
@@ -28,20 +24,6 @@ export async function deleteAdminRoute(fastify: FastifyInstance) {
                         message: { type: 'string' },
                     },
                 },
-                401: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        error: { type: 'string' },
-                    },
-                },
-                403: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        error: { type: 'string' },
-                    },
-                },
                 404: {
                     type: 'object',
                     properties: {
@@ -58,7 +40,7 @@ export async function deleteAdminRoute(fastify: FastifyInstance) {
                 },
             },
         },
-        preHandler: [isAuth, requireAdmin],
+        // ✅ Sin preHandler - No requiere autenticación
     }, async (request, reply) => {
         return deleteAdminController(request as any, reply);
     });

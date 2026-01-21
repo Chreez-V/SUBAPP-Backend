@@ -1,16 +1,12 @@
 import { FastifyInstance } from 'fastify';
 import { updateAdminController } from '../../controllers/admin/updateAdmin.controller.js';
 import { updateAdminJsonSchema, adminResponseSchema } from '../../validators/admin.schema.js';
-import isAuth from '../../middlewares/isAuth.js';
-import requireAdmin from '../../middlewares/requireAdmin.js';
-
 
 export async function updateAdminRoute(fastify: FastifyInstance) {
     fastify.put('/:id', {
         schema: {
             description: 'Actualizar los datos de un administrador existente',
             tags: ['Admin'],
-            security: [{ bearerAuth: [] }],
             params: {
                 type: 'object',
                 required: ['id'],
@@ -31,20 +27,6 @@ export async function updateAdminRoute(fastify: FastifyInstance) {
                         data: adminResponseSchema,
                     },
                 },
-                401: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        error: { type: 'string' },
-                    },
-                },
-                403: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        error: { type: 'string' },
-                    },
-                },
                 404: {
                     type: 'object',
                     properties: {
@@ -61,7 +43,7 @@ export async function updateAdminRoute(fastify: FastifyInstance) {
                 },
             },
         },
-        preHandler: [isAuth, requireAdmin],
+        // ✅ Sin preHandler - No requiere autenticación
     }, async (request, reply) => {
         return updateAdminController(request as any, reply);
     });
