@@ -8,44 +8,23 @@ import changePasswordRoutes from "./auth/change-password.js";
 import { usersRoutes } from "./auth/delete.js";
 import { googleAuthRoutes } from "./auth/google-auth.js";
 import { routesRoutes } from "../routes/routes.routes.js";
-import { adminRoutes } from "./admin/index.js";
+import { adminRoutes } from "./admin/index.js"; // ✅ Importar rutas de admin
 
 export async function routes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);
   await fastify.register(databaseRoutes);
-  
-  await fastify.register(LoginRoutes, { 
-    prefix: '/auth' 
-  });
-  await fastify.register(logoutRoute, { 
-    prefix: '/auth' 
 
-  await fastify.register(LoginRoutes, {
-    prefix: '/auth'
-  });
-  await fastify.register(logoutRoute, {
-    prefix: '/auth'
-  });
-  await fastify.register(register, {
-    prefix: '/auth'
-  });
-  await fastify.register(changePasswordRoutes, {
-    prefix: '/auth'
-  });
-
-  await fastify.register(usersRoutes,{prefix:'/auth'});
-  
-  await fastify.register(googleAuthRoutes, {
-    prefix: '/auth'
+  // Auth module routes
+  await fastify.register(LoginRoutes, { prefix: '/auth' });
+  await fastify.register(logoutRoute, { prefix: '/auth' });
+  await fastify.register(register, { prefix: '/auth' });
+  await fastify.register(changePasswordRoutes, { prefix: '/auth' });
   await fastify.register(usersRoutes, { prefix: '/auth' });
+  await fastify.register(googleAuthRoutes, { prefix: '/auth' });
 
-  // Admin module routes
-  await fastify.register(adminRoutes, {
-    prefix: '/api/admin'
-  });
+  // ✅ Admin module routes
+  await fastify.register(adminRoutes, { prefix: '/api/admin' });
 
   // Routes management
-  await fastify.register(routesRoutes, { 
-    prefix: '/api' 
-  });
+  await fastify.register(routesRoutes, { prefix: '/api' });
 }

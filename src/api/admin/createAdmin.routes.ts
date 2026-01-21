@@ -1,6 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { createAdminController } from '../../controllers/admin/createAdmin.controller.js';
 import { createAdminJsonSchema, adminResponseSchema } from '../../validators/admin.schema.js';
+import isAuth from '../../middlewares/isAuth.js';
+import requireAdmin from '../../middlewares/requireAdmin.js';
 
 export async function createAdminRoute(fastify: FastifyInstance) {
     fastify.post('/', {
@@ -40,7 +42,7 @@ export async function createAdminRoute(fastify: FastifyInstance) {
                 },
             },
         },
-        // ✅ Sin preHandler - No requiere autenticación
+        preHandler: [isAuth, requireAdmin], // ✅ Requiere autenticación y rol de admin
     }, async (request, reply) => {
         return createAdminController(request as any, reply);
     });

@@ -1,5 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { deleteAdminController } from '../../controllers/admin/deleteAdmin.controller.js';
+import isAuth from '../../middlewares/isAuth.js';
+import requireAdmin from '../../middlewares/requireAdmin.js';
 
 export async function deleteAdminRoute(fastify: FastifyInstance) {
     fastify.delete('/:id', {
@@ -40,7 +42,7 @@ export async function deleteAdminRoute(fastify: FastifyInstance) {
                 },
             },
         },
-        // ✅ Sin preHandler - No requiere autenticación
+        preHandler: [isAuth, requireAdmin], // ✅ Requiere autenticación y rol de admin
     }, async (request, reply) => {
         return deleteAdminController(request as any, reply);
     });

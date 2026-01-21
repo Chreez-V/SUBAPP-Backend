@@ -1,6 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { updateAdminController } from '../../controllers/admin/updateAdmin.controller.js';
 import { updateAdminJsonSchema, adminResponseSchema } from '../../validators/admin.schema.js';
+import isAuth from '../../middlewares/isAuth.js';
+import requireAdmin from '../../middlewares/requireAdmin.js';
 
 export async function updateAdminRoute(fastify: FastifyInstance) {
     fastify.put('/:id', {
@@ -43,7 +45,7 @@ export async function updateAdminRoute(fastify: FastifyInstance) {
                 },
             },
         },
-        // ✅ Sin preHandler - No requiere autenticación
+        preHandler: [isAuth, requireAdmin], // ✅ Requiere autenticación y rol de admin
     }, async (request, reply) => {
         return updateAdminController(request as any, reply);
     });
