@@ -2,6 +2,7 @@ import { Schema, model, Document } from 'mongoose'
 import bcrypt from 'bcryptjs'
 
 
+/* TS Admin's interface */
 export interface IAdmin extends Document {
   fullName: string
   email: string
