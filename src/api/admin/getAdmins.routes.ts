@@ -1,0 +1,51 @@
+import { FastifyInstance } from 'fastify';
+import { getAdminsController } from '../../controllers/admin/getAdmins.controller.js';
+import { adminResponseSchema } from '../../validators/admin.schema.js';
+import isAuth from '../../middlewares/isAuth.js';
+import requireAdmin from '../../middlewares/requireAdmin.js';
+
+
+export async function getAdminsRoute(fastify: FastifyInstance) {
+    fastify.get('/', {
+        schema: {
+            description: 'Listar todos los administradores del sistema',
+            tags: ['Admin'],
+            security: [{ bearerAuth: [] }],
+            response: {
+                200: {
+                    type: 'object',
+                    properties: {
+                        success: { type: 'boolean' },
+                        count: { type: 'number' },
+                        data: {
+                            type: 'array',
+                            items: adminResponseSchema,
+                        },
+                    },
+                },
+                401: {
+                    type: 'object',
+                    properties: {
+                        success: { type: 'boolean' },
+                        error: { type: 'string' },
+                    },
+                },
+                403: {
+                    type: 'object',
+                    properties: {
+                        success: { type: 'boolean' },
+                        error: { type: 'string' },
+                    },
+                },
+                500: {
+                    type: 'object',
+                    properties: {
+                        success: { type: 'boolean' },
+                        error: { type: 'string' },
+                    },
+                },
+            },
+        },
+        preHandler: [isAuth, requireAdmin],
+    }, getAdminsController);
+}
