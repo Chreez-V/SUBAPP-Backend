@@ -9,7 +9,7 @@ import { usersRoutes } from "./auth/delete.js";
 import { passengersRoutes } from "./passengers.routes.js";
 import { googleAuthRoutes } from "./auth/google-auth.js";
 import { routesRoutes } from "../routes/routes.routes.js";
-import { adminRoutes } from "./admin/index.js"; // ✅ Importar rutas de admin
+import { adminRoutes } from "./admin/index.js";
 
 export async function routes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);
@@ -23,13 +23,11 @@ export async function routes(fastify: FastifyInstance) {
   await fastify.register(usersRoutes, { prefix: '/auth' });
   await fastify.register(googleAuthRoutes, { prefix: '/auth' });
 
-  // ✅ Admin module routes
-  await fastify.register(adminRoutes, { prefix: '/api/admin' });
-  await fastify.register(passengersRoutes, { prefix: '/api' });
   // Admin module routes
-  await fastify.register(adminRoutes, {
-    prefix: '/api/admin'
-  });
+  await fastify.register(adminRoutes, { prefix: '/api/admin' });
+  
+  // Passengers routes
+  await fastify.register(passengersRoutes, { prefix: '/api' });
 
   // Routes management
   await fastify.register(routesRoutes, { prefix: '/api' });
