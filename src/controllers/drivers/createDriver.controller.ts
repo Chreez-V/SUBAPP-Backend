@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { createDriver, getDriverByLicenseNumber } from '../../models/driver';
+import { createDriver, getDriverByLicenseNumber } from '../../models/driver.js';
 
 interface CreateDriverBody {
     name: string

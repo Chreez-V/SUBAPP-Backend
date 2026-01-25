@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { updateDriver, getDriverById } from '../../models/driver';
+import { updateDriver, getDriverById } from '../../models/driver.js';
+
 
 interface UpdateDriverParams {
     id: string

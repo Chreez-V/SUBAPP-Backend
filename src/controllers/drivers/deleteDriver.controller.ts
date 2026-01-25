@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { Driver, getDriverById } from '../../models/driver';
+import { Driver, getDriverById } from '../../models/driver.js';
 
 interface DeleteDriverParams {
     id: string
