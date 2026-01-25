@@ -1,6 +1,7 @@
 import { Schema, model, Document } from 'mongoose'
 import bcrypt from 'bcryptjs'
 
+
 /* TS Admin's interface */
 export interface IAdmin extends Document {
   fullName: string
@@ -8,19 +9,18 @@ export interface IAdmin extends Document {
   auth: {
     password: string
   }
-  role: 'admin' // just ADMIN
+  role: 'admin'
 
   phone?: string
   //permissions?: string[] // Admin's permissions (Example: delete,add users...)
   lastLogin?: Date
-  
+
   resetPasswordToken?: string
   resetPasswordExpires?: Date
 
   createdAt: Date
   updatedAt: Date
 
-  //compare password method
   comparePassword(candidate: string): Promise<boolean>
 }
 
@@ -61,21 +61,21 @@ const AdminSchema = new Schema<IAdmin>(
     //   type: String,
     //   default: ['users:read', 'users:write']
     // }],
-   
+
     lastLogin: {
       type: Date,
     },
-    
-    resetPasswordToken: { 
+
+    resetPasswordToken: {
       type: String,
-      required: false 
+      required: false
     },
-    resetPasswordExpires: { 
+    resetPasswordExpires: {
       type: Date,
       required: false
     }
   },
-  { 
+  {
     timestamps: true,
     toJSON: {
       transform: function (doc, ret) {
@@ -88,8 +88,6 @@ const AdminSchema = new Schema<IAdmin>(
   }
 )
 
-// Middleware
-// SOLUCIÓN AL ERROR 2349: Se eliminó el argumento 'next' ya que el hook es asíncrono
 
 AdminSchema.pre('save', async function () {
   if (!this.isModified('auth.password')) return
@@ -108,23 +106,17 @@ AdminSchema.methods.comparePassword = function (candidate: string) {
   return bcrypt.compare(candidate, this.auth.password)
 }
 
-// Export model
 export const Admin = model<IAdmin>('Admin', AdminSchema)
 
 
-// QUERIES
-
-// Get all admins
 export const getAdmins = async () => {
   return Admin.find().lean()
 }
 
-// Get admin by session/email
 export const getAdminBySession = async (sessionAdmin: { email: string }) => {
   return Admin.findOne({ email: sessionAdmin.email }).lean()
 }
 
-// Create admin
 export const createAdmin = async (data: {
   fullName: string
   email: string
@@ -137,7 +129,7 @@ export const createAdmin = async (data: {
     email: data.email,
     phone: data.phone,
     auth: {
-      password: data.password, 
+      password: data.password,
     },
     /*permissions: data.permissions ?? ['users:read', 'users:write'], */
 
@@ -146,7 +138,6 @@ export const createAdmin = async (data: {
   return admin.save()
 }
 
-// Find admin by email (to login)
 export const findAdminByEmail = async (email: string) => {
   return Admin.findOne({ email }).select('+auth.password')
 }
