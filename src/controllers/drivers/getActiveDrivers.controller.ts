@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { getDrivers } from '../../models/driver';
+import { getDrivers } from '../../models/driver.js';
 
 export async function getActiveDrivers(request: FastifyRequest, reply: FastifyReply){
     try{
