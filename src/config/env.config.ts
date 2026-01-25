@@ -22,6 +22,8 @@ interface Envs {
     MONGODB_URL: string;
     HOST: string;
     JWT_SECRET: string;
+    GOOGLE_CLIENT_ID: string;
+    OSRM_URL?: string;
 }
 
 const envsSchema = z.object({
@@ -29,6 +31,8 @@ const envsSchema = z.object({
     MONGODB_URL: z.url(),
     HOST: z.string().min(1),
     JWT_SECRET: z.string().min(10),
+    GOOGLE_CLIENT_ID: z.string().min(1).optional().default(""),
+    OSRM_URL: z.string().url().optional(),
 });
 
 const result = envsSchema.safeParse({ ...process.env });
@@ -56,4 +60,6 @@ export const envs = {
     MONGODB_URL: envsValidates.MONGODB_URL,
     HOST: envsValidates.HOST,
     JWT_SECRET: envsValidates.JWT_SECRET,
+    GOOGLE_CLIENT_ID: envsValidates.GOOGLE_CLIENT_ID,
+    OSRM_URL: envsValidates.OSRM_URL,
 };
