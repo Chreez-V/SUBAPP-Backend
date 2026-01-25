@@ -3,6 +3,7 @@ import "dotenv/config";
 import { envs } from "../config/env.config.js";
 import { app } from "../config/app.config.js";
 import { startMqtt } from "../mqtt/plugins/mqttplugin.js";
+import cors from "@fastify/cors";
 
 // TODO: Move this to a database config file
 const connectDB = async (): Promise<void> => {
