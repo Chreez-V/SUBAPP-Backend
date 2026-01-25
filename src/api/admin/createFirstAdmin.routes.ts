@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { createFirstAdminController } from '../../controllers/admin/createFirstAdmin.controller.js';
+import { createAdminController } from '../../controllers/admin/createAdmin.controller.js';
 
 const createFirstAdminSchema = {
     body: {
@@ -77,5 +77,5 @@ export async function createFirstAdminRoute(fastify: FastifyInstance) {
             description: '🔓 Crear el PRIMER administrador (solo funciona si no hay admins)',
             summary: 'Setup inicial - Crear primer admin'
         }
-    }, createFirstAdminController);
+    }, createAdminController);
 }

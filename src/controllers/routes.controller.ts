@@ -65,8 +65,8 @@ export const getActiveRoutes = async (
   reply: FastifyReply
 ) => {
   try {
-    const routes = await Route.find({ isActive: true })
-      .select('name startPoint endPoint distance duration fare geometry schedules')
+    const routes = await Route.find({ status: 'Active' })
+      .select('name startPoint endPoint distance estimatedTime geometry')
       .lean();
 
     return reply.status(200).send({
@@ -146,17 +146,15 @@ export const createRoute = async (
     console.log('Calculating route with OSRM...');
     const osrmResult = await osrmService.calculateRoute(startPoint, endPoint);
 
-    // Create route in database
+    // Create route in database using English field names
     const newRoute = await Route.create({
       name,
       startPoint,
       endPoint,
       geometry: osrmResult.geometry,
       distance: osrmResult.distance,
-      duration: osrmResult.duration,
-      fare: fare || 0,
-      schedules: schedules || [],
-      isActive: true,
+      estimatedTime: osrmResult.duration,
+      status: 'Active',
     });
 
     return reply.status(201).send({
@@ -195,16 +193,23 @@ export const updateRoute = async (
     const updates = request.body;
 
     // Don't allow updating geometry directly
-    if ('geometry' in updates || 'distance' in updates || 'duration' in updates) {
+    if ('geometry' in updates || 'distance' in updates || 'estimatedTime' in updates) {
       return reply.status(400).send({
         success: false,
         error: 'Cannot update geometry directly. Create a new route instead.',
       });
     }
 
+    // Map English field names
+    const mappedUpdates: any = {};
+    if (updates.name !== undefined) mappedUpdates.name = updates.name;
+    if (updates.isActive !== undefined) {
+      mappedUpdates.status = updates.isActive ? 'Active' : 'Inactive';
+    }
+
     const updatedRoute = await Route.findByIdAndUpdate(
       id,
-      updates,
+      mappedUpdates,
       { new: true, runValidators: true }
     );
 
@@ -241,7 +246,7 @@ export const deleteRoute = async (
 
     const route = await Route.findByIdAndUpdate(
       id,
-      { isActive: false },
+      { status: 'Inactive' },
       { new: true }
     );
 

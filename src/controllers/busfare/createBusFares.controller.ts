@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { createBusFare } from '../../models/busfare.js';
+import mongoose from 'mongoose';
 
 interface CreateBody {
   routeId: string;
@@ -17,7 +18,11 @@ export async function createBusFareController(
   }
 
   try {
-    const newFare = await createBusFare({ routeId, fare });
+    // Convert string to ObjectId using mongoose.Types.ObjectId
+    const newFare = await createBusFare({ 
+      routeId: new mongoose.Types.ObjectId(routeId) as any,
+      fare 
+    });
     return reply.code(201).send(newFare);
   } catch (error) {
     console.error('Error en createBusFareController:', error);

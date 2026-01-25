@@ -3,17 +3,17 @@ import { Schema, model, Document } from 'mongoose';
 interface IPoint {
     lat: number;
     lng: number;
-    nombre?: string;
+    name?: string;
 }
+
 export interface IRoute extends Document {
-    nombre: string;
-    puntoInicio: IPoint;
-    puntoFinal: IPoint;
+    name: string;
+    startPoint: IPoint;
+    endPoint: IPoint;
     geometry?: any;
-    distancia?: number; // lo cambié a number
-    tiempoEstimado?: number; // lo cambié a number
-    estado: 'Activa' | 'Inactiva';
-    // precio?: number;
+    distance?: number;
+    estimatedTime?: number;
+    status: 'Active' | 'Inactive';
     createdAt: Date;
     updatedAt: Date;
 }
@@ -21,21 +21,21 @@ export interface IRoute extends Document {
 const PointSchema = new Schema({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
-    nombre: { type: String },
+    name: { type: String },
 }, { _id: false });
 
 const RouteSchema = new Schema<IRoute>(
     {
-        nombre: {
+        name: {
             type: String,
             required: true,
             trim: true,
         },
-        puntoInicio: {
+        startPoint: {
             type: PointSchema,
             required: true,
         },
-        puntoFinal: {
+        endPoint: {
             type: PointSchema,
             required: true,
         },
@@ -43,45 +43,47 @@ const RouteSchema = new Schema<IRoute>(
             type: Schema.Types.Mixed,
             required: true,
         },
-        distancia: {
+        distance: {
             type: Number,
             required: true,
         },
-        tiempoEstimado: {
+        estimatedTime: {
             type: Number,
             required: true,
         },
-        estado: {
+        status: {
             type: String,
-            enum: ['Activa', 'Inactiva'],
-            default: 'Activa',
+            enum: ['Active', 'Inactive'],
+            default: 'Active',
         },
-        // precio: {
-        //     type: Number,
-        //     default: 1.0,
-        // },
     },
     { timestamps: true }
 );
 
 export const Route = model<IRoute>('Route', RouteSchema);
+
 // ---- QUERY FUNCTIONS ----
 export const getRoutes = async (filter: any = {}) => {
     return Route.find(filter).lean();
 };
+
 export const getRouteById = async (id: string) => {
     return Route.findById(id).lean();
 };
+
 export const createRoute = async (data: Partial<IRoute>) => {
     const route = new Route(data);
     return route.save();
 };
+
 export const updateRoute = async (id: string, data: Partial<IRoute>) => {
     return Route.findByIdAndUpdate(id, data, { new: true }).lean();
 };
+
 export const deleteRoute = async (id: string) => {
     return Route.findByIdAndDelete(id).lean();
 };
+
 export const getActiveRoutes = async () => {
-    return Route.find({ estado: 'Activa' }).lean();
+    return Route.find({ status: 'Active' }).lean();
 };

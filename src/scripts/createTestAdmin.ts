@@ -5,7 +5,7 @@ import { envs } from '../config/env.config.js';
 async function createTestAdmin() {
     try {
         // Conectar a MongoDB
-        await mongoose.connect(envs.MONGO_URI);
+        await mongoose.connect(envs.MONGODB_URL);
         console.log('✅ Conectado a MongoDB');
 
         // Crear administrador de prueba
