@@ -6,6 +6,7 @@ import { LoginRoutes } from "./auth/login.js";
 import { register } from "./auth/register.js";
 import changePasswordRoutes from "./auth/change-password.js";
 import { usersRoutes } from "./auth/delete.js";
+import { passengersRoutes } from "./passengers.routes.js";
 import { googleAuthRoutes } from "./auth/google-auth.js";
 import { routesRoutes } from "../routes/routes.routes.js";
 import { adminRoutes } from "./admin/index.js"; // ✅ Importar rutas de admin
@@ -24,6 +25,11 @@ export async function routes(fastify: FastifyInstance) {
 
   // ✅ Admin module routes
   await fastify.register(adminRoutes, { prefix: '/api/admin' });
+  await fastify.register(passengersRoutes, { prefix: '/api' });
+  // Admin module routes
+  await fastify.register(adminRoutes, {
+    prefix: '/api/admin'
+  });
 
   // Routes management
   await fastify.register(routesRoutes, { prefix: '/api' });
