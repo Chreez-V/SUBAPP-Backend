@@ -23,7 +23,6 @@ export async function routes(fastify: FastifyInstance) {
   await fastify.register(changePasswordRoutes, { prefix: '/auth' });
   await fastify.register(usersRoutes, { prefix: '/auth' });
   await fastify.register(googleAuthRoutes, { prefix: '/auth' });
-  await fastify.register(busFareRoutes, { prefix: '/api/busfare' }); 
 
   // Admin module routes
   await fastify.register(adminRoutes, { prefix: '/api/admin' });
@@ -34,4 +33,6 @@ export async function routes(fastify: FastifyInstance) {
   // Routes management
   await fastify.register(routesRoutes, { prefix: '/api' });
 
+  // Bus Fare routes
+  await fastify.register(busFareRoutes, { prefix: '/api/busfares' }); 
 }
