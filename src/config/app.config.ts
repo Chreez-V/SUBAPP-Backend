@@ -23,7 +23,7 @@ export async function app() {
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
       'https://subapp-api.onrender.com',
-      // Agrega aquí la URL de producción del admin panel cuando la tengas
+      'https://suba-admin-panel.vercel.app',
     ],
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
