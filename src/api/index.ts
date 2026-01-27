@@ -12,6 +12,7 @@ import { passengersRoutes } from "./passengers.routes.js";
 import { googleAuthRoutes } from "./auth/google-auth.js";
 import { routesRoutes } from "../routes/routes.routes.js";
 import { adminRoutes } from "./admin/index.js";
+import { currentUserRoute } from "./auth/me.js";
 
 export async function routes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);
@@ -24,6 +25,7 @@ export async function routes(fastify: FastifyInstance) {
   await fastify.register(changePasswordRoutes, { prefix: '/auth' });
   await fastify.register(usersRoutes, { prefix: '/auth' });
   await fastify.register(googleAuthRoutes, { prefix: '/auth' });
+  await fastify.register(currentUserRoute, { prefix: '/auth' });
 
   // Admin module routes
   await fastify.register(adminRoutes, { prefix: '/api/admin' });
