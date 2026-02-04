@@ -5,6 +5,8 @@ import { app } from "../config/app.config.js";
 import { startMqtt } from "../mqtt/plugins/mqttplugin.js";
 import cors from "@fastify/cors";
 
+import tripRoutes from "../api/trip.routes.js";
+
 // TODO: Move this to a database config file
 const connectDB = async (): Promise<void> => {
   try {
@@ -22,6 +24,8 @@ export async function main(): Promise<void> {
     await connectDB();
 
     const server = await app();
+
+    server.register(tripRoutes, { prefix: '/api/trips' });
 
     await server.listen({
       port: envs.PORT || 3500,
