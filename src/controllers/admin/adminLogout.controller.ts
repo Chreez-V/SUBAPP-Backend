@@ -2,7 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { Admin } from '../../models/admin.js';
 
 export class AdminLogoutController {
-    static async logout(request: FastifyRequest, reply: FastifyReply) {
+     static async logout(request: FastifyRequest, reply: FastifyReply) {
         try {
             // Verificar que el usuario esté autenticado
             const user = request.user as { email: string; role: string };
@@ -26,3 +26,4 @@ export class AdminLogoutController {
         }
     }
 }
+

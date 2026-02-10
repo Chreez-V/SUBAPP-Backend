@@ -1,15 +1,11 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { Admin } from '../../models/admin.js';
 
-interface GetAdminParams {
-    id: string;
-}
-
 export async function getAdminController(
-    request: FastifyRequest<{ Params: GetAdminParams }>,
+    request: FastifyRequest,
     reply: FastifyReply
 ) {
-    const { id } = request.params;
+    const { id } = request.params as { id: string };
 
     try {
         const admin = await Admin.findById(id).lean();

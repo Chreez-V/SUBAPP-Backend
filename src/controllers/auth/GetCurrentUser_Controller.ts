@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { User } from '../../models/user.js';
 import { Admin } from '../../models/admin.js';
 import { Driver } from '../../models/driver.js';
+import { Support } from '../../models/support.js';
 
 export class GetCurrentUserController {
   static async getCurrentUser(request: FastifyRequest, reply: FastifyReply) {
@@ -26,8 +27,11 @@ export class GetCurrentUserController {
         case 'driver':
           currentUser = await Driver.findById(user.id).select('-auth.password').lean();
           break;
-        case 'admin':
+case 'admin':
           currentUser = await Admin.findById(user.id).select('-auth.password').lean();
+          break;
+        case 'support':
+          currentUser = await Support.findById(user.id).select('-auth.password').lean();
           break;
         default:
           return reply.status(400).send({ 
@@ -56,9 +60,15 @@ export class GetCurrentUserController {
             phone: currentUser.phone,
             status: currentUser.status 
           }),
-          ...(user.role === 'admin' && { 
+...(user.role === 'admin' && { 
             phone: currentUser.phone,
             lastLogin: currentUser.lastLogin 
+          }),
+          ...(user.role === 'support' && { 
+            department: currentUser.department,
+            level: currentUser.level,
+            status: currentUser.status,
+            phone: currentUser.phone
           }),
           createdAt: currentUser.createdAt,
           updatedAt: currentUser.updatedAt,

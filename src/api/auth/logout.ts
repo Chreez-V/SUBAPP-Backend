@@ -1,8 +1,10 @@
 import { FastifyInstance } from 'fastify';
 import { logoutController } from '../../controllers/auth/Logout_Controller.js'; 
-import isAuth from '../../middlewares/isAuth.js';
+import { createJwtMiddleware } from '../../middlewares/authMiddleware.js';
 
 export default async function logoutRoute(fastify: FastifyInstance) {
+    const authenticate = createJwtMiddleware(fastify);
+    
     fastify.post('/logout', {
         schema: {
           description: 'Cerrar sesión del usuario actual (invalida el token en el cliente)',
@@ -34,6 +36,6 @@ export default async function logoutRoute(fastify: FastifyInstance) {
             }
           }
         },
-        preHandler: [isAuth]
+        preHandler: authenticate
     }, logoutController);
 }

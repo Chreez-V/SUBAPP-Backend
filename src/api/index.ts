@@ -13,6 +13,7 @@ import { googleAuthRoutes } from "./auth/google-auth.js";
 import { routesRoutes } from "../routes/routes.routes.js";
 import { adminRoutes } from "./admin/index.js";
 import { currentUserRoute } from "./auth/me.js";
+import supportRoutes from "./support/index.js";
 
 export async function routes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);
@@ -41,4 +42,7 @@ export async function routes(fastify: FastifyInstance) {
   
   // Drivers routes
   await fastify.register(driversRoutes, { prefix: '/api/drivers' });
+
+  // Support routes
+  await fastify.register(supportRoutes, { prefix: '/api' });
 }

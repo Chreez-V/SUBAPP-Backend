@@ -1,15 +1,11 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { Admin } from '../../models/admin.js';
 
-interface DeleteAdminParams {
-    id: string;
-}
-
 export async function deleteAdminController(
-    request: FastifyRequest<{ Params: DeleteAdminParams }>,
+    request: FastifyRequest,
     reply: FastifyReply
 ) {
-    const { id } = request.params;
+    const { id } = request.params as { id: string };
 
     try {
         // Verificar que el admin existe

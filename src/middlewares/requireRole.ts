@@ -14,7 +14,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
  * // Passenger y Driver pueden acceder
  * fastify.get('/api/profile', { preHandler: requireRole(['passenger', 'driver']) }, handler);
  */
-export function requireRole(allowedRoles: Array<'passenger' | 'driver' | 'admin'>) {
+export function requireRole(allowedRoles: Array<'passenger' | 'driver' | 'admin' | 'support'>) {
   return async function(request: FastifyRequest, reply: FastifyReply) {
     try {
       const user = (request as any).user;

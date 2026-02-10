@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { AdminLogoutController } from '../../controllers/admin/adminLogout.controller.js';
 import isAuth from '../../middlewares/isAuth.js';
-import requireAdmin from '../../middlewares/requireAdmin.js';
+import { requireAdmin } from '../../middlewares/requireAdmin.js';
 
 export async function adminLogoutRoute(fastify: FastifyInstance) {
     fastify.post('/logout', {
