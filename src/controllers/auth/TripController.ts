@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import Trip from '../../models/trip'; 
-import { createTripSchema } from '../../validators/trip_schema';
+import Trip from '../../models/trip.js'; 
+import { createTripSchema } from '../../validators/trip_schema.js';
 
 // Iniciar Viaje
 export const createTrip = async (req: FastifyRequest, reply: FastifyReply) => {

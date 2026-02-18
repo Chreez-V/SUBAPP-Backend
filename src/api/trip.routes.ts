@@ -1,13 +1,15 @@
 import { FastifyInstance } from 'fastify';
-import { createTrip, endTrip, getTrips } from '../controllers/auth/TripController';
+import { createTrip, endTrip, getTrips } from '../controllers/auth/TripController.js';
 
 export default async function tripRoutes(fastify: FastifyInstance) {
   
+
   // 1. POST: Crear Viaje 
   fastify.post('/', {
     schema: {
       description: 'Crear un nuevo viaje',
-      tags: ['Trips'],
+      tags: ['Viajes'],
+      summary: 'Crear viaje',
       body: {
         type: 'object',
         required: ['driverId', 'routeIdentifier'], // Campos obligatorios
@@ -20,15 +22,17 @@ export default async function tripRoutes(fastify: FastifyInstance) {
     }
   }, createTrip);
 
+
   // 2. PATCH: Finalizar Viaje (Agregamos el parámetro ID)
-  fastify.patch('/:id/end', {
+  fastify.patch('/:id/finalizar', {
     schema: {
       description: 'Finalizar un viaje activo',
-      tags: ['Trips'],
+      tags: ['Viajes'],
+      summary: 'Finalizar viaje',
       params: {
         type: 'object',
         properties: {
-          id: { type: 'string', description: 'ID del Viaje' }
+          id: { type: 'string', description: 'ID del viaje' }
         }
       }
     }
@@ -38,7 +42,8 @@ export default async function tripRoutes(fastify: FastifyInstance) {
   fastify.get('/', {
     schema: {
       description: 'Obtener historial de viajes',
-      tags: ['Trips']
+      tags: ['Viajes'],
+      summary: 'Historial de viajes'
     }
   }, getTrips);
 }
