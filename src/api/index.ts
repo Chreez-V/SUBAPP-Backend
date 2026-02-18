@@ -14,6 +14,7 @@ import { routesRoutes } from "../routes/routes.routes.js";
 import { adminRoutes } from "./admin/index.js";
 import { currentUserRoute } from "./auth/me.js";
 import supportRoutes from "./support/index.js";
+import { profileRoutes } from "./auth/profile.routes.js";
 
 export async function routes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);
@@ -27,6 +28,7 @@ export async function routes(fastify: FastifyInstance) {
   await fastify.register(usersRoutes, { prefix: '/auth' });
   await fastify.register(googleAuthRoutes, { prefix: '/auth' });
   await fastify.register(currentUserRoute, { prefix: '/auth' });
+  await fastify.register(profileRoutes, { prefix: '/auth' });
 
   // Admin module routes
   await fastify.register(adminRoutes, { prefix: '/api/admin' });

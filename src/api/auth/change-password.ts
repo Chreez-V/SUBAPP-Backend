@@ -4,18 +4,17 @@ import {
   forgotPasswordJsonSchema,
   resetPasswordJsonSchema,
 } from '../../validators/auth.schema.js';
-import isAuth from '../../middlewares/isAuth.js';
 
 async function changePasswordRoutes(fastify: FastifyInstance) {
+  // QUITAMOS isAuth porque el usuario no está logueado cuando olvida su clave
   fastify.post(
     '/forgot-password',
     {
       schema: {
         tags: ['Auth'],
-        description: 'Solicitar enlace para restablecer contraseña',
+        description: 'Generar código de 6 dígitos y guardar en BD',
         body: forgotPasswordJsonSchema,
       },
-      preHandler: [isAuth],
     },
     forgotPassword
   );
@@ -25,10 +24,9 @@ async function changePasswordRoutes(fastify: FastifyInstance) {
     {
       schema: {
         tags: ['Auth'],
-        description: 'Restablecer contraseña usando token recibido por correo',
+        description: 'Validar código y cambiar la contraseña',
         body: resetPasswordJsonSchema,
       },
-      preHandler: [isAuth],
     },
     resetPassword
   );

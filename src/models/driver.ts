@@ -11,6 +11,7 @@ export interface IDriver extends Document {
   licenseNumber: string // Driver's license number or ID
   phone: string
   status: 'Active' | 'Inactive'
+  profilePictureUrl?: string
   resetPasswordToken?: string // Token for password reset
   resetPasswordExpires?: Date
   createdAt: Date
@@ -43,6 +44,7 @@ const DriverSchema = new Schema<IDriver>(
     licenseNumber: { type: String, required: true, unique: true, trim: true },
     phone: { type: String, required: true, trim: true },
     status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' },
+    profilePictureUrl: { type: String, default: null },
     resetPasswordToken: { type: String, required: false },
     resetPasswordExpires: { type: Date, required: false },
   },
