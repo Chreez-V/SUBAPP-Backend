@@ -14,7 +14,16 @@ export interface IUser extends Document {
   credit?: number;
   profilePictureUrl?: string;
 
-  // ✅ CAMPOS PARA EL RESENTEO DE CONTRASEÑA
+  // ✅ KYC LIGHT — Identidad y Perfil
+  // Requeridos para operar con el sistema de pagos (wallet, NFC, QR)
+  // Validación Just-in-Time: se verifican en cada controlador de pago
+  cedula?: string;              // Cédula de identidad (ej: "V-12345678")
+  birthDate?: Date;             // Fecha de nacimiento
+  phone?: string;               // Teléfono móvil (ej: "+58 412 1234567")
+  idDocumentImageUrl?: string;  // URL de la foto/scan del documento de identidad
+  isProfileComplete: boolean;   // true cuando cedula + birthDate + phone están presentes
+
+  // ✅ CAMPOS PARA EL RESETEO DE CONTRASEÑA
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
 
@@ -68,7 +77,30 @@ const UserSchema = new Schema<IUser>(
       default: null,
     },
 
-    // ✅ CAMPOS AGREGADOS AL SCHEMA
+    // ✅ KYC LIGHT — Identidad y Perfil
+    cedula: {
+      type: String,
+      trim: true,
+      sparse: true,  // Permite múltiples documentos con null pero unique entre los que tienen valor
+      unique: true,
+    },
+    birthDate: {
+      type: Date,
+    },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    idDocumentImageUrl: {
+      type: String,
+      default: null,
+    },
+    isProfileComplete: {
+      type: Boolean,
+      default: false,
+    },
+
+    // ✅ CAMPOS PARA EL RESETEO DE CONTRASEÑA
     resetPasswordToken: {
       type: String,
       required: false,
@@ -95,12 +127,22 @@ const UserSchema = new Schema<IUser>(
 // Middleware: hash password before save
 // SOLUCIÓN AL ERROR 2349: Se eliminó el argumento 'next' ya que el hook es asíncrono
 UserSchema.pre("save", async function () {
-  if (!this.isModified("auth.password")) return;
+  // Hash password if modified
+  if (this.isModified("auth.password")) {
+    try {
+      this.auth.password = await bcrypt.hash(this.auth.password, 10);
+    } catch (error: any) {
+      throw error;
+    }
+  }
 
-  try {
-    this.auth.password = await bcrypt.hash(this.auth.password, 10);
-  } catch (error: any) {
-    throw error; // Lanza la excepción para detener el guardado
+  // Recalcular isProfileComplete si algún campo KYC fue modificado
+  if (
+    this.isModified("cedula") ||
+    this.isModified("birthDate") ||
+    this.isModified("phone")
+  ) {
+    this.isProfileComplete = !!(this.cedula && this.birthDate && this.phone);
   }
 });
 
@@ -157,6 +199,34 @@ export const createUser = async (data: {
 export const findUserByEmail = async (email: string) => {
   // Para poder comparar la contraseña, forzamos la selección del campo
   return User.findOne({ email }).select("+auth.password");
+};
+
+// Find user by ID
+export const findUserById = async (id: string) => {
+  return User.findById(id).lean();
+};
+
+// Completar perfil KYC Light (tarea 4.0)
+// Actualiza los campos de identidad y recalcula isProfileComplete vía el pre-save hook
+export const updateUserProfile = async (
+  userId: string,
+  data: {
+    cedula?: string;
+    birthDate?: Date;
+    phone?: string;
+    idDocumentImageUrl?: string;
+  }
+) => {
+  // Usamos findById + save para que el pre-save hook recalcule isProfileComplete
+  const user = await User.findById(userId);
+  if (!user) return null;
+
+  if (data.cedula !== undefined) user.cedula = data.cedula;
+  if (data.birthDate !== undefined) user.birthDate = data.birthDate;
+  if (data.phone !== undefined) user.phone = data.phone;
+  if (data.idDocumentImageUrl !== undefined) user.idDocumentImageUrl = data.idDocumentImageUrl;
+
+  return user.save();
 };
 
 // Get passengers with optional filters
