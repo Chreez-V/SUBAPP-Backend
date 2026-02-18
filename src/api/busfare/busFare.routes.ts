@@ -37,9 +37,10 @@ export async function busFareRoutes(fastify: FastifyInstance) {
       description: 'Crea una nueva tarifa de pasaje con el monto especificado.',
       body: {
         type: 'object',
-        required: ['amount'],
+        required: ['fare'],
         properties: {
-          amount: { type: 'number', description: 'Monto de la tarifa en la moneda local' }
+          routeId: { type: 'string', description: 'ID de la ruta asociada' },
+          fare: { type: 'number', description: 'Monto de la tarifa en la moneda local' }
         }
       },
       response: {
@@ -48,7 +49,7 @@ export async function busFareRoutes(fastify: FastifyInstance) {
           type: 'object',
           properties: {
             _id: { type: 'string' },
-            amount: { type: 'number' },
+            fare: { type: 'number' },
             createdAt: { type: 'string', format: 'date-time' }
           }
         }
@@ -71,9 +72,9 @@ export async function busFareRoutes(fastify: FastifyInstance) {
       },
       body: {
         type: 'object',
-        required: ['amount'],
+        required: ['fare'],
         properties: {
-          amount: { type: 'number', description: 'Nuevo monto de la tarifa' }
+          fare: { type: 'number', description: 'Nuevo monto de la tarifa' }
         }
       },
       response: {
@@ -82,7 +83,7 @@ export async function busFareRoutes(fastify: FastifyInstance) {
           type: 'object',
           properties: {
             _id: { type: 'string' },
-            amount: { type: 'number' },
+            fare: { type: 'number' },
             updatedAt: { type: 'string', format: 'date-time' }
           }
         },

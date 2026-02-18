@@ -3,7 +3,7 @@ import { createBusFare } from '../../models/busfare.js';
 import mongoose from 'mongoose';
 
 interface CreateBody {
-  routeId: string;
+  routeId?: string;
   fare: number;
 }
 
@@ -13,16 +13,19 @@ export async function createBusFareController(
 ) {
   const { routeId, fare } = request.body;
 
-  if (!routeId || fare === undefined) {
-    return reply.code(400).send({ message: 'routeId y fare son requeridos.' });
+  if (fare === undefined) {
+    return reply.code(400).send({ message: 'fare es requerido.' });
   }
 
   try {
-    // Convert string to ObjectId using mongoose.Types.ObjectId
-    const newFare = await createBusFare({ 
-      routeId: new mongoose.Types.ObjectId(routeId) as any,
-      fare 
-    });
+    const data: any = { fare };
+
+    // Only set routeId if it's a valid ObjectId
+    if (routeId && mongoose.Types.ObjectId.isValid(routeId)) {
+      data.routeId = new mongoose.Types.ObjectId(routeId);
+    }
+
+    const newFare = await createBusFare(data);
     return reply.code(201).send(newFare);
   } catch (error) {
     console.error('Error en createBusFareController:', error);
