@@ -5,7 +5,7 @@ import { createJwtMiddleware } from '../../middlewares/authMiddleware.js';
 export async function currentUserRoute(fastify: FastifyInstance) {
   const authenticate = createJwtMiddleware(fastify);
 
-  fastify.get('/usuario-actual', {
+  fastify.get('/me', {
     preHandler: authenticate,
     schema: {
       tags: ['Auth'],
