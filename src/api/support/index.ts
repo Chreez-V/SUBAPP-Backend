@@ -15,11 +15,12 @@ export default async function supportRoutes(fastify: FastifyInstance) {
   const authenticate = createJwtMiddleware(fastify);
   
   // Protected routes - require authentication
-  fastify.get('/supports', {
+  fastify.get('/agentes-soporte', {
     preHandler: [authenticate, requireAdmin],
     schema: {
-      description: 'Get all support agents',
-      tags: ['Support'],
+      description: 'Retorna la lista completa de todos los agentes de soporte registrados en el sistema. Requiere autenticación con rol de administrador.',
+      summary: 'Listar todos los agentes de soporte',
+      tags: ['Soporte'],
       response: {
         200: {
           type: 'object',
@@ -36,11 +37,12 @@ export default async function supportRoutes(fastify: FastifyInstance) {
     }
   }, getAllSupports)
 
-  fastify.get('/supports/active', {
+  fastify.get('/agentes-soporte/activos', {
     preHandler: [authenticate, requireAdmin],
     schema: {
-      description: 'Get active support agents',
-      tags: ['Support'],
+      description: 'Retorna únicamente los agentes de soporte con estado activo disponibles para atender consultas.',
+      summary: 'Listar agentes de soporte activos',
+      tags: ['Soporte'],
       response: {
         200: {
           type: 'object',
@@ -57,15 +59,16 @@ export default async function supportRoutes(fastify: FastifyInstance) {
     }
   }, getActiveSupports)
 
-  fastify.get('/supports/:id', {
+  fastify.get('/agentes-soporte/buscar/:id', {
     preHandler: [authenticate, requireAdmin],
     schema: {
-      description: 'Get support agent by ID',
-      tags: ['Support'],
+      description: 'Retorna los datos completos de un agente de soporte específico buscado por su ID de MongoDB.',
+      summary: 'Obtener agente de soporte por ID',
+      tags: ['Soporte'],
       params: {
         type: 'object',
         properties: {
-          id: { type: 'string' }
+          id: { type: 'string', description: 'ID del agente de soporte (MongoDB ObjectId)' }
         }
       },
       response: {
@@ -81,21 +84,22 @@ export default async function supportRoutes(fastify: FastifyInstance) {
   }, getSupportByIdController)
 
   // Protected routes - require authentication
-  fastify.post('/supports', {
+  fastify.post('/agentes-soporte/crear', {
     preHandler: [authenticate, requireAdmin],
     schema: {
-      description: 'Create new support agent',
-      tags: ['Support'],
+      description: 'Crea un nuevo agente de soporte en el sistema con sus datos personales y credenciales de acceso. Requiere rol de administrador.',
+      summary: 'Crear agente de soporte',
+      tags: ['Soporte'],
         body: {
           type: 'object',
           required: ['fullName', 'email', 'password'],
           properties: {
-            fullName: { type: 'string', minLength: 2 },
-            email: { type: 'string', format: 'email' },
-            password: { type: 'string', minLength: 6 },
-            phone: { type: 'string' }
+            fullName: { type: 'string', minLength: 2, description: 'Nombre completo del agente' },
+            email: { type: 'string', format: 'email', description: 'Correo electrónico del agente' },
+            password: { type: 'string', minLength: 6, description: 'Contraseña (mínimo 6 caracteres)' },
+            phone: { type: 'string', description: 'Teléfono del agente (opcional)' }
           },
-          additionalProperties: false // No permite campos extra como "image.png"
+          additionalProperties: false
         },
         response: {
           201: {
@@ -122,23 +126,24 @@ export default async function supportRoutes(fastify: FastifyInstance) {
     }
   }, createSupportController)
 
-  fastify.patch('/supports/:id', {
+  fastify.patch('/agentes-soporte/actualizar/:id', {
     preHandler: [authenticate, requireAdmin],
     schema: {
-      description: 'Update support agent',
-      tags: ['Support'],
+      description: 'Actualiza los datos de un agente de soporte existente. Solo se modifican los campos enviados en el cuerpo de la petición.',
+      summary: 'Actualizar agente de soporte',
+      tags: ['Soporte'],
       params: {
         type: 'object',
         properties: {
-          id: { type: 'string' }
+          id: { type: 'string', description: 'ID del agente de soporte (MongoDB ObjectId)' }
         }
       },
       body: {
         type: 'object',
         properties: {
-          fullName: { type: 'string', minLength: 2 },
-          status: { enum: ['Active', 'Inactive'] },
-          phone: { type: 'string' }
+          fullName: { type: 'string', minLength: 2, description: 'Nuevo nombre del agente' },
+          status: { enum: ['Active', 'Inactive'], description: 'Nuevo estado del agente' },
+          phone: { type: 'string', description: 'Nuevo teléfono del agente' }
         }
       },
       response: {
@@ -154,15 +159,16 @@ export default async function supportRoutes(fastify: FastifyInstance) {
     }
   }, updateSupportController)
 
-  fastify.delete('/supports/:id', {
+  fastify.delete('/agentes-soporte/desactivar/:id', {
     preHandler: [authenticate, requireAdmin],
     schema: {
-      description: 'Deactivate support agent',
-      tags: ['Support'],
+      description: 'Desactiva un agente de soporte marcándolo como inactivo (eliminación lógica). El agente sigue en la base de datos.',
+      summary: 'Desactivar agente de soporte',
+      tags: ['Soporte'],
       params: {
         type: 'object',
         properties: {
-          id: { type: 'string' }
+          id: { type: 'string', description: 'ID del agente de soporte (MongoDB ObjectId)' }
         }
       },
       response: {
@@ -178,15 +184,16 @@ export default async function supportRoutes(fastify: FastifyInstance) {
     }
   }, deleteSupportController)
 
-  fastify.delete('/supports/:id/permanent', {
+  fastify.delete('/agentes-soporte/eliminar/:id', {
     preHandler: [authenticate, requireAdmin],
     schema: {
-      description: 'Permanently delete support agent',
-      tags: ['Support'],
+      description: 'Elimina permanentemente un agente de soporte del sistema. Esta acción no puede deshacerse.',
+      summary: 'Eliminar agente de soporte permanentemente',
+      tags: ['Soporte'],
       params: {
         type: 'object',
         properties: {
-          id: { type: 'string' }
+          id: { type: 'string', description: 'ID del agente de soporte (MongoDB ObjectId)' }
         }
       },
       response: {

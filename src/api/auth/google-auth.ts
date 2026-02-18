@@ -2,9 +2,10 @@ import { FastifyInstance } from 'fastify';
 import { GoogleAuthController } from '../../controllers/auth/GoogleAuthController.js';
 
 export async function googleAuthRoutes(fastify: FastifyInstance) {
-  fastify.post('/google-auth', {
+  fastify.post('/autenticar-google', {
     schema: {
-      description: 'Autenticación con Google OAuth',
+      description: 'Autentica o registra un usuario usando un token de identidad de Google OAuth2. Si el usuario no existe, es creado automáticamente.',
+      summary: 'Autenticación con Google',
       tags: ['Auth'],
       body: {
         type: 'object',

@@ -5,9 +5,10 @@ import isAuth from '../../middlewares/isAuth.js';
 import { requireAdmin } from '../../middlewares/requireAdmin.js';
 
 export async function createAdminRoute(fastify: FastifyInstance) {
-    fastify.post('/', {
+    fastify.post('/crear', {
         schema: {
-            description: 'Crear un nuevo administrador en el sistema',
+            description: 'Crea un nuevo usuario con rol de administrador en el sistema. Requiere autenticación con rol de administrador.',
+            summary: 'Crear administrador',
             tags: ['Admin'],
             body: createAdminJsonSchema,
             response: {

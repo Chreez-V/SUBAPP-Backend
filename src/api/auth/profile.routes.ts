@@ -3,11 +3,12 @@ import { ProfilePictureController } from "../../controllers/auth/ProfilePictureC
 import isAuth from "../../middlewares/isAuth.js";
 
 export async function profileRoutes(fastify: FastifyInstance) {
-  fastify.post('/profile-picture', {
+  fastify.post('/foto-perfil', {
     preHandler: [isAuth],
     schema: {
-      tags: ['Profile'],
-      description: 'Sube una foto de perfil a Supabase y guarda la URL en Mongo',
+      tags: ['Perfil'],
+      description: 'Sube una imagen de perfil a Supabase Storage y actualiza la URL en el perfil del usuario en MongoDB. Requiere autenticación.',
+      summary: 'Subir foto de perfil',
       security: [{ bearerAuth: [] }]
     }
   }, ProfilePictureController.upload);

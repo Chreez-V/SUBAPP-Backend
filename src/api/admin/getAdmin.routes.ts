@@ -5,9 +5,10 @@ import isAuth from '../../middlewares/isAuth.js';
 import { requireAdmin } from '../../middlewares/requireAdmin.js';
 
 export async function getAdminRoute(fastify: FastifyInstance) {
-    fastify.get('/:id', {
+    fastify.get('/buscar/:id', {
         schema: {
-            description: 'Obtener un administrador específico por ID',
+            description: 'Retorna los datos completos de un administrador específico buscado por su MongoDB ObjectId.',
+            summary: 'Obtener administrador por ID',
             tags: ['Admin'],
             params: {
                 type: 'object',

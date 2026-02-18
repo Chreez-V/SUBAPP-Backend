@@ -4,9 +4,10 @@ import isAuth from '../../middlewares/isAuth.js';
 import { requireAdmin } from '../../middlewares/requireAdmin.js';
 
 export async function deleteAdminRoute(fastify: FastifyInstance) {
-    fastify.delete('/:id', {
+    fastify.delete('/eliminar/:id', {
         schema: {
-            description: 'Eliminar permanentemente un administrador del sistema',
+            description: 'Elimina permanentemente un administrador del sistema por su ID. Esta acción no puede deshacerse. Requiere autenticación con rol de administrador.',
+            summary: 'Eliminar administrador',
             tags: ['Admin'],
             params: {
                 type: 'object',

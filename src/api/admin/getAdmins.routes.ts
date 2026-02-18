@@ -5,9 +5,10 @@ import isAuth from '../../middlewares/isAuth.js';
 import { requireAdmin } from '../../middlewares/requireAdmin.js';
 
 export async function getAdminsRoute(fastify: FastifyInstance) {
-    fastify.get('/', {
+    fastify.get('/listar', {
         schema: {
-            description: 'Listar todos los administradores del sistema',
+            description: 'Retorna la lista completa de todos los administradores registrados en el sistema. Requiere autenticación con rol de administrador.',
+            summary: 'Listar todos los administradores',
             tags: ['Admin'],
             response: {
                 200: {

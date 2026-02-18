@@ -8,11 +8,11 @@ import { updateDriverController } from '../../controllers/drivers/updateDriver.c
 
 export async function driversRoutes(fastify: FastifyInstance) {
     // Get all drivers
-    fastify.get('/', {
+    fastify.get('/listar', {
         schema: {
-            tags: ['Drivers'],
-            description: 'Get all drivers',
-            summary: 'Retrieve all drivers',
+            tags: ['Conductores'],
+            description: 'Retorna la lista completa de todos los conductores registrados en el sistema, incluyendo activos e inactivos.',
+            summary: 'Listar todos los conductores',
             response: {
                 200: {
                     type: 'object',
@@ -42,24 +42,24 @@ export async function driversRoutes(fastify: FastifyInstance) {
     }, getDriversController);
 
     // Get active drivers only
-    fastify.get('/active', {
+    fastify.get('/activos', {
         schema: {
-            tags: ['Drivers'],
-            description: 'Get only active drivers',
-            summary: 'Retrieve active drivers',
+            tags: ['Conductores'],
+            description: 'Retorna únicamente los conductores con estado "Active" disponibles para asignación de viajes.',
+            summary: 'Listar conductores activos',
         }
     }, getActiveDrivers);
 
     // Get driver by ID
-    fastify.get('/:id', {
+    fastify.get('/buscar/:id', {
         schema: {
-            tags: ['Drivers'],
-            description: 'Get driver by ID',
-            summary: 'Retrieve a specific driver',
+            tags: ['Conductores'],
+            description: 'Retorna los datos completos de un conductor específico buscado por su ID de MongoDB.',
+            summary: 'Obtener conductor por ID',
             params: {
                 type: 'object',
                 properties: {
-                    id: { type: 'string', description: 'Driver ID' }
+                    id: { type: 'string', description: 'ID del conductor (MongoDB ObjectId)' }
                 },
                 required: ['id']
             }
@@ -67,62 +67,62 @@ export async function driversRoutes(fastify: FastifyInstance) {
     }, getDriverController);
 
     // Create new driver
-    fastify.post('/', {
+    fastify.post('/crear', {
         schema: {
-            tags: ['Drivers'],
-            description: 'Create a new driver',
-            summary: 'Register a new driver',
+            tags: ['Conductores'],
+            description: 'Registra un nuevo conductor en el sistema con sus datos personales y número de licencia.',
+            summary: 'Crear conductor',
             body: {
                 type: 'object',
                 required: ['name', 'email', 'password', 'licenseNumber', 'phone'],
                 properties: {
-                    name: { type: 'string', description: 'Driver full name' },
-                    email: { type: 'string', format: 'email', description: 'Driver email' },
-                    password: { type: 'string', minLength: 6, description: 'Driver password' },
-                    licenseNumber: { type: 'string', description: 'Driver license number' },
-                    phone: { type: 'string', description: 'Driver phone number' },
-                    status: { type: 'string', enum: ['Active', 'Inactive'], default: 'Active' }
+                    name: { type: 'string', description: 'Nombre completo del conductor' },
+                    email: { type: 'string', format: 'email', description: 'Correo electrónico del conductor' },
+                    password: { type: 'string', minLength: 6, description: 'Contraseña (mínimo 6 caracteres)' },
+                    licenseNumber: { type: 'string', description: 'Número de licencia de conducir' },
+                    phone: { type: 'string', description: 'Número de teléfono del conductor' },
+                    status: { type: 'string', enum: ['Active', 'Inactive'], default: 'Active', description: 'Estado inicial del conductor' }
                 }
             }
         }
     }, createDriverController);
 
     // Update driver
-    fastify.put('/:id', {
+    fastify.put('/actualizar/:id', {
         schema: {
-            tags: ['Drivers'],
-            description: 'Update driver information',
-            summary: 'Update an existing driver',
+            tags: ['Conductores'],
+            description: 'Actualiza los datos de un conductor existente. Solo se modifican los campos enviados en el cuerpo de la petición.',
+            summary: 'Actualizar conductor',
             params: {
                 type: 'object',
                 properties: {
-                    id: { type: 'string', description: 'Driver ID' }
+                    id: { type: 'string', description: 'ID del conductor (MongoDB ObjectId)' }
                 },
                 required: ['id']
             },
             body: {
                 type: 'object',
                 properties: {
-                    name: { type: 'string' },
-                    email: { type: 'string', format: 'email' },
-                    licenseNumber: { type: 'string' },
-                    phone: { type: 'string' },
-                    status: { type: 'string', enum: ['Active', 'Inactive'] }
+                    name: { type: 'string', description: 'Nuevo nombre del conductor' },
+                    email: { type: 'string', format: 'email', description: 'Nuevo correo electrónico' },
+                    licenseNumber: { type: 'string', description: 'Nuevo número de licencia' },
+                    phone: { type: 'string', description: 'Nuevo teléfono' },
+                    status: { type: 'string', enum: ['Active', 'Inactive'], description: 'Nuevo estado del conductor' }
                 }
             }
         }
     }, updateDriverController);
 
     // Delete driver
-    fastify.delete('/:id', {
+    fastify.delete('/eliminar/:id', {
         schema: {
-            tags: ['Drivers'],
-            description: 'Delete a driver permanently',
-            summary: 'Remove a driver from the system',
+            tags: ['Conductores'],
+            description: 'Elimina permanentemente un conductor del sistema por su ID. Esta acción no puede deshacerse.',
+            summary: 'Eliminar conductor',
             params: {
                 type: 'object',
                 properties: {
-                    id: { type: 'string', description: 'Driver ID' }
+                    id: { type: 'string', description: 'ID del conductor (MongoDB ObjectId)' }
                 },
                 required: ['id']
             }

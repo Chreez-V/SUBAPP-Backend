@@ -4,11 +4,11 @@ import isAuth from '../../middlewares/isAuth.js';
 import { requireAdmin } from '../../middlewares/requireAdmin.js';
 
 export async function adminLogoutRoute(fastify: FastifyInstance) {
-    fastify.post('/logout', {
+    fastify.post('/cerrar-sesion', {
         schema: {
-            description: 'Cerrar sesión de administrador',
+            description: 'Cierra la sesión del administrador autenticado. Requiere token JWT válido con rol de administrador.',
             tags: ['Admin Auth'],
-            summary: 'Logout de administrador',
+            summary: 'Cerrar sesión de administrador',
             security: [{ bearerAuth: [] }],
             response: {
                 200: {

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import "dotenv/config";
 import { envs } from "../config/env.config.js";
 import { app } from "../config/app.config.js";
+import tripRoutes from "../api/trip.routes.js";
 // TODO: Move this to a database config file
 const connectDB = async () => {
     try {
@@ -17,6 +18,7 @@ export async function main() {
     try {
         await connectDB();
         const server = await app();
+        server.register(tripRoutes, { prefix: '/api/trips' });
         await server.listen({
             port: envs.PORT || 3500,
             host: envs.HOST || "0.0.0.0"
