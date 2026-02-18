@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 
 interface IPoint {
     lat: number;
@@ -6,14 +6,38 @@ interface IPoint {
     name?: string;
 }
 
+/** One edge between two consecutive stops (OSRM segment) */
+interface IEdge {
+    fromStop: Types.ObjectId;
+    toStop: Types.ObjectId;
+    geometry: {
+        type: string;
+        coordinates: number[][];
+    };
+    distance: number; // km
+    duration: number; // min
+}
+
 export interface IRoute extends Document {
     name: string;
-    startPoint: IPoint;
-    endPoint: IPoint;
-    geometry?: any;
-    distance?: number;
-    estimatedTime?: number;
+    /** Ordered list of stop references that form this route */
+    stops: Types.ObjectId[];
+    /** OSRM edge segments between consecutive stops */
+    edges: IEdge[];
+    /** Full merged GeoJSON geometry for rendering */
+    geometry: any;
+    /** Total route distance in km */
+    distance: number;
+    /** Total estimated time in minutes */
+    estimatedTime: number;
+    /** "circular" (A-B-C-A) or "bidirectional" (A-B-C, same path back) */
+    routeType: 'circular' | 'bidirectional';
     status: 'Active' | 'Inactive';
+
+    // Legacy fields kept for backwards compatibility
+    startPoint?: IPoint;
+    endPoint?: IPoint;
+
     createdAt: Date;
     updatedAt: Date;
 }
@@ -24,6 +48,14 @@ const PointSchema = new Schema({
     name: { type: String },
 }, { _id: false });
 
+const EdgeSchema = new Schema({
+    fromStop: { type: Schema.Types.ObjectId, ref: 'Stop', required: true },
+    toStop: { type: Schema.Types.ObjectId, ref: 'Stop', required: true },
+    geometry: { type: Schema.Types.Mixed, required: true },
+    distance: { type: Number, required: true },
+    duration: { type: Number, required: true },
+}, { _id: false });
+
 const RouteSchema = new Schema<IRoute>(
     {
         name: {
@@ -31,14 +63,11 @@ const RouteSchema = new Schema<IRoute>(
             required: true,
             trim: true,
         },
-        startPoint: {
-            type: PointSchema,
-            required: true,
-        },
-        endPoint: {
-            type: PointSchema,
-            required: true,
-        },
+        stops: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Stop',
+        }],
+        edges: [EdgeSchema],
         geometry: {
             type: Schema.Types.Mixed,
             required: true,
@@ -51,24 +80,34 @@ const RouteSchema = new Schema<IRoute>(
             type: Number,
             required: true,
         },
+        routeType: {
+            type: String,
+            enum: ['circular', 'bidirectional'],
+            default: 'bidirectional',
+        },
         status: {
             type: String,
             enum: ['Active', 'Inactive'],
             default: 'Active',
         },
+        // Legacy
+        startPoint: { type: PointSchema },
+        endPoint: { type: PointSchema },
     },
     { timestamps: true }
 );
+
+RouteSchema.index({ status: 1 });
 
 export const Route = model<IRoute>('Route', RouteSchema);
 
 // ---- QUERY FUNCTIONS ----
 export const getRoutes = async (filter: any = {}) => {
-    return Route.find(filter).lean();
+    return Route.find(filter).populate('stops').lean();
 };
 
 export const getRouteById = async (id: string) => {
-    return Route.findById(id).lean();
+    return Route.findById(id).populate('stops').lean();
 };
 
 export const createRoute = async (data: Partial<IRoute>) => {
@@ -77,7 +116,7 @@ export const createRoute = async (data: Partial<IRoute>) => {
 };
 
 export const updateRoute = async (id: string, data: Partial<IRoute>) => {
-    return Route.findByIdAndUpdate(id, data, { new: true }).lean();
+    return Route.findByIdAndUpdate(id, data, { new: true }).populate('stops').lean();
 };
 
 export const deleteRoute = async (id: string) => {
@@ -85,5 +124,5 @@ export const deleteRoute = async (id: string) => {
 };
 
 export const getActiveRoutes = async () => {
-    return Route.find({ status: 'Active' }).lean();
+    return Route.find({ status: 'Active' }).populate('stops').lean();
 };

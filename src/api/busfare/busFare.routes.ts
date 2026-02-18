@@ -39,7 +39,7 @@ export async function busFareRoutes(fastify: FastifyInstance) {
         type: 'object',
         required: ['amount'],
         properties: {
-          amount: { type: 'number', description: 'Monto de la tarifa en la moneda local' }
+          amount: { type: 'number', description: 'Monto de la tarifa en la moneda local (entero)' }
         }
       },
       response: {
@@ -73,7 +73,7 @@ export async function busFareRoutes(fastify: FastifyInstance) {
         type: 'object',
         required: ['amount'],
         properties: {
-          amount: { type: 'number', description: 'Nuevo monto de la tarifa' }
+          amount: { type: 'number', description: 'Nuevo monto de la tarifa (entero)' }
         }
       },
       response: {

@@ -4,6 +4,8 @@ import {
   getActiveRoutes,
   getRouteById,
   createRoute,
+  createRouteFromStops,
+  calculateEdge,
   updateRoute,
   deleteRoute,
   permanentDeleteRoute,
@@ -93,6 +95,54 @@ export async function routesRoutes(fastify: FastifyInstance) {
       }
     }
   }, createRoute);
+
+  // POST - Create route from ordered stops (new flow)
+  fastify.post('/rutas/crear-desde-paradas', {
+    schema: {
+      description: 'Crea una ruta a partir de una secuencia de paradas. El frontend envía los IDs de paradas y las aristas OSRM pre-calculadas.',
+      summary: 'Crear ruta desde paradas',
+      tags: ['Rutas'],
+      body: {
+        type: 'object',
+        required: ['name', 'stopIds', 'edges', 'routeType'],
+        properties: {
+          name: { type: 'string' },
+          stopIds: { type: 'array', items: { type: 'string' } },
+          edges: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                fromStop: { type: 'string' },
+                toStop: { type: 'string' },
+                geometry: { type: 'object' },
+                distance: { type: 'number' },
+                duration: { type: 'number' },
+              },
+            },
+          },
+          routeType: { type: 'string', enum: ['circular', 'bidirectional'] },
+        },
+      },
+    },
+  }, createRouteFromStops);
+
+  // POST - Calculate single OSRM edge between two stops
+  fastify.post('/rutas/calcular-arista', {
+    schema: {
+      description: 'Calcula la arista OSRM entre dos paradas. Usado por el constructor de rutas en el admin panel.',
+      summary: 'Calcular arista OSRM',
+      tags: ['Rutas'],
+      body: {
+        type: 'object',
+        required: ['fromStopId', 'toStopId'],
+        properties: {
+          fromStopId: { type: 'string' },
+          toStopId: { type: 'string' },
+        },
+      },
+    },
+  }, calculateEdge);
 
   // PATCH - Update a route
   fastify.patch('/rutas/actualizar/:id', {

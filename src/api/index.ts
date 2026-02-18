@@ -12,6 +12,9 @@ import tripRoutes from "./trip.routes.js";
 import { passengersRoutes } from "./passengers.routes.js";
 import { googleAuthRoutes } from "./auth/google-auth.js";
 import { routesRoutes } from "../routes/routes.routes.js";
+import { stopsRoutes } from "../routes/stops.routes.js";
+import { routeSetsRoutes } from "../routes/routeSets.routes.js";
+import { reportsRoutes } from "../routes/reports.routes.js";
 import { adminRoutes } from "./admin/index.js";
 import { currentUserRoute } from "./auth/me.js";
 import supportRoutes from "./support/index.js";
@@ -39,6 +42,15 @@ export async function routes(fastify: FastifyInstance) {
 
   // Routes management
   await fastify.register(routesRoutes, { prefix: '/api' });
+
+  // Stops management
+  await fastify.register(stopsRoutes, { prefix: '/api' });
+
+  // Route Sets (conjuntos) management
+  await fastify.register(routeSetsRoutes, { prefix: '/api' });
+
+  // Reports management
+  await fastify.register(reportsRoutes, { prefix: '/api' });
 
   // Pasaje routes
   await fastify.register(busFareRoutes, { prefix: '/api/pasajes' });

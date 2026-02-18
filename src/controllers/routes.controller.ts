@@ -1,22 +1,35 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { Route } from '../models/route.js';
+import { Stop } from '../models/stop.js';
 import { OSRMService } from '../services/osrm.service.js';
 
 const osrmService = new OSRMService();
 
-// Interfaces for type validation
-interface CreateRouteBody {
+// ── Interfaces ──────────────────────────────────────────
+
+/** Legacy: create with start/end only */
+interface CreateRouteBodyLegacy {
   name: string;
-  startPoint: {
-    lat: number;
-    lng: number;
-  };
-  endPoint: {
-    lat: number;
-    lng: number;
-  };
+  startPoint: { lat: number; lng: number };
+  endPoint: { lat: number; lng: number };
   fare?: number;
   schedules?: string[];
+}
+
+/** New: create from ordered stop IDs + pre-computed edges */
+interface EdgePayload {
+  fromStop: string;
+  toStop: string;
+  geometry: { type: string; coordinates: number[][] };
+  distance: number; // km
+  duration: number; // min
+}
+
+interface CreateRouteFromStopsBody {
+  name: string;
+  stopIds: string[];
+  edges: EdgePayload[];
+  routeType: 'circular' | 'bidirectional';
 }
 
 interface UpdateRouteBody {
@@ -40,6 +53,7 @@ export const getAllRoutes = async (
   try {
     const routes = await Route.find()
       .select('-__v')
+      .populate('stops')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -66,7 +80,8 @@ export const getActiveRoutes = async (
 ) => {
   try {
     const routes = await Route.find({ status: 'Active' })
-      .select('name startPoint endPoint distance estimatedTime geometry')
+      .select('name startPoint endPoint distance estimatedTime geometry stops routeType status')
+      .populate('stops')
       .lean();
 
     return reply.status(200).send({
@@ -116,10 +131,10 @@ export const getRouteById = async (
 };
 
 /**
- * POST /api/routes - Create a new route
+ * POST /api/routes - Create a new route (legacy: start/end only)
  */
 export const createRoute = async (
-  request: FastifyRequest<{ Body: CreateRouteBody }>,
+  request: FastifyRequest<{ Body: CreateRouteBodyLegacy }>,
   reply: FastifyReply
 ) => {
   try {
@@ -154,6 +169,7 @@ export const createRoute = async (
       geometry: osrmResult.geometry,
       distance: osrmResult.distance,
       estimatedTime: osrmResult.duration,
+      routeType: 'bidirectional',
       status: 'Active',
     });
 
@@ -176,6 +192,158 @@ export const createRoute = async (
     return reply.status(500).send({
       success: false,
       error: 'Error creating route',
+      details: error.message,
+    });
+  }
+};
+
+/**
+ * POST /api/rutas/crear-desde-paradas - Create a route from ordered stops
+ * The frontend sends the stop IDs and the OSRM edges it already computed.
+ */
+export const createRouteFromStops = async (
+  request: FastifyRequest<{ Body: CreateRouteFromStopsBody }>,
+  reply: FastifyReply
+) => {
+  try {
+    const { name, stopIds, edges, routeType } = request.body;
+
+    if (!name || !stopIds || stopIds.length < 2 || !edges || edges.length === 0) {
+      return reply.status(400).send({
+        success: false,
+        error: 'Name, at least 2 stopIds, and edges are required',
+      });
+    }
+
+    // Check duplicate name
+    const existingRoute = await Route.findOne({ name });
+    if (existingRoute) {
+      return reply.status(409).send({
+        success: false,
+        error: 'A route with this name already exists',
+      });
+    }
+
+    // Validate that all referenced stops exist (deduplicate IDs for the query)
+    const uniqueStopIds = [...new Set(stopIds)];
+    const stops = await Stop.find({ _id: { $in: uniqueStopIds } });
+    if (stops.length !== uniqueStopIds.length) {
+      return reply.status(400).send({
+        success: false,
+        error: 'One or more stop IDs are invalid',
+      });
+    }
+
+    // Merge all edge geometries into a single GeoJSON LineString
+    const allCoordinates: number[][] = [];
+    let totalDistance = 0;
+    let totalDuration = 0;
+
+    for (const edge of edges) {
+      const coords = edge.geometry?.coordinates || [];
+      // Avoid duplicating the junction point between consecutive edges
+      if (allCoordinates.length > 0 && coords.length > 0) {
+        allCoordinates.push(...coords.slice(1));
+      } else {
+        allCoordinates.push(...coords);
+      }
+      totalDistance += edge.distance;
+      totalDuration += edge.duration;
+    }
+
+    const mergedGeometry = {
+      type: 'LineString',
+      coordinates: allCoordinates,
+    };
+
+    // Derive legacy start/end from first/last stop
+    const firstStop = stops.find((s) => s._id.toString() === stopIds[0]);
+    const lastStop = stops.find((s) => s._id.toString() === stopIds[stopIds.length - 1]);
+
+    const routeDoc = new Route();
+    routeDoc.name = name;
+    routeDoc.stops = stopIds as any;
+    routeDoc.edges = edges.map((e) => ({
+      fromStop: e.fromStop,
+      toStop: e.toStop,
+      geometry: e.geometry,
+      distance: e.distance,
+      duration: e.duration,
+    })) as any;
+    routeDoc.geometry = mergedGeometry;
+    routeDoc.distance = totalDistance;
+    routeDoc.estimatedTime = totalDuration;
+    routeDoc.routeType = routeType;
+    routeDoc.status = 'Active';
+    if (firstStop) routeDoc.startPoint = { lat: firstStop.location.lat, lng: firstStop.location.lng } as any;
+    if (lastStop) routeDoc.endPoint = { lat: lastStop.location.lat, lng: lastStop.location.lng } as any;
+
+    const newRoute = await routeDoc.save();
+
+    // Populate stops for response
+    const populated = await Route.findById(newRoute._id).populate('stops').lean();
+
+    return reply.status(201).send({
+      success: true,
+      message: 'Route created from stops successfully',
+      data: populated,
+    });
+  } catch (error: any) {
+    console.error('Error creating route from stops:', error);
+    return reply.status(500).send({
+      success: false,
+      error: 'Error creating route from stops',
+      details: error.message,
+    });
+  }
+};
+
+/**
+ * POST /api/rutas/calcular-arista - Calculate a single OSRM edge between two stops
+ * Used by the frontend route builder to get geometry for each edge as the admin
+ * clicks stop-to-stop.
+ */
+export const calculateEdge = async (
+  request: FastifyRequest<{
+    Body: { fromStopId: string; toStopId: string };
+  }>,
+  reply: FastifyReply
+) => {
+  try {
+    const { fromStopId, toStopId } = request.body;
+
+    const [fromStop, toStop] = await Promise.all([
+      Stop.findById(fromStopId),
+      Stop.findById(toStopId),
+    ]);
+
+    if (!fromStop || !toStop) {
+      return reply.status(404).send({
+        success: false,
+        error: 'One or both stops not found',
+      });
+    }
+
+    const osrmResult = await osrmService.calculateRoute(
+      { lat: fromStop.location.lat, lng: fromStop.location.lng },
+      { lat: toStop.location.lat, lng: toStop.location.lng }
+    );
+
+    return reply.status(200).send({
+      success: true,
+      data: {
+        fromStop: fromStopId,
+        toStop: toStopId,
+        geometry: osrmResult.geometry,
+        distance: osrmResult.distance,
+        duration: osrmResult.duration,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error calculating edge:', error);
+    return reply.status(500).send({
+      success: false,
+      error: 'Error calculating edge',
       details: error.message,
     });
   }
