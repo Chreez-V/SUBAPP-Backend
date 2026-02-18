@@ -50,6 +50,7 @@ export class GetCurrentUserController {
           email: currentUser.email,
           fullName: currentUser.fullName || currentUser.name,
           role: user.role,
+          profilePictureUrl: currentUser.profilePictureUrl || null,
           ...(user.role === 'passenger' && { credit: currentUser.credit }),
           ...(user.role === 'driver' && { 
             licenseNumber: currentUser.licenseNumber,

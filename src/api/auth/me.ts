@@ -24,6 +24,7 @@ export async function currentUserRoute(fastify: FastifyInstance) {
                 email: { type: 'string' },
                 fullName: { type: 'string' },
                 role: { type: 'string', enum: ['passenger', 'driver', 'admin'] },
+                profilePictureUrl: { type: 'string', nullable: true },
                 credit: { type: 'number' },
                 licenseNumber: { type: 'string' },
                 phone: { type: 'string' },
