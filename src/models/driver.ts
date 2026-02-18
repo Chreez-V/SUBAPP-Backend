@@ -1,6 +1,15 @@
 import { Schema, model, Document } from 'mongoose'
 import bcrypt from 'bcryptjs'
 
+export interface IDriverPaymentMethod {
+  type: 'pago_movil' | 'transferencia' | 'binance'
+  banco?: string       // Banco asociado (ej: 'Banesco', 'Mercantil')
+  cedula: string       // Cédula vinculada al método de pago
+  phone?: string       // Teléfono vinculado (para pago móvil)
+  cuenta?: string      // Número de cuenta (para transferencia)
+  tag?: string         // Tag o ID (para Binance u otros)
+}
+
 export interface IDriver extends Document {
   name: string
   email: string
@@ -12,6 +21,11 @@ export interface IDriver extends Document {
   phone: string
   status: 'Active' | 'Inactive'
   profilePictureUrl?: string
+  credit: number        // Saldo acumulado por cobros recibidos
+  // ✅ MÉTODO DE PAGO — Obligatorio al crear desde Admin Panel
+  // Se muestra al pasajero cuando el conductor activa cobro por NFC o QR
+  // Se usa para procesar retiros de saldo del conductor
+  paymentMethod?: IDriverPaymentMethod
   resetPasswordToken?: string // Token for password reset
   resetPasswordExpires?: Date
   createdAt: Date
@@ -45,6 +59,22 @@ const DriverSchema = new Schema<IDriver>(
     phone: { type: String, required: true, trim: true },
     status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' },
     profilePictureUrl: { type: String, default: null },
+    credit: { type: Number, default: 0 },
+
+    // ✅ MÉTODO DE PAGO — Requerido para activar cobro por NFC/QR
+    paymentMethod: {
+      type: {
+        type: String,
+        enum: ['pago_movil', 'transferencia', 'binance'],
+        required: true,
+      },
+      banco: { type: String, trim: true },
+      cedula: { type: String, required: true, trim: true },
+      phone: { type: String, trim: true },
+      cuenta: { type: String, trim: true },
+      tag: { type: String, trim: true },
+    },
+
     resetPasswordToken: { type: String, required: false },
     resetPasswordExpires: { type: Date, required: false },
   },
@@ -104,4 +134,21 @@ export const createDriver = async (data: any) => {
 export const updateDriver = async (id: string, data: Partial<IDriver>) => {
   // Update driver data
   return Driver.findByIdAndUpdate(id, data, { new: true }).lean()
+}
+
+// Update driver payment method
+export const updateDriverPaymentMethod = async (
+  id: string,
+  paymentMethod: IDriverPaymentMethod
+) => {
+  return Driver.findByIdAndUpdate(
+    id,
+    { paymentMethod },
+    { new: true, runValidators: true }
+  ).lean()
+}
+
+// Get driver payment info (used by boarding controllers to show to passenger)
+export const getDriverPaymentInfo = async (id: string) => {
+  return Driver.findById(id).select('name paymentMethod').lean()
 }
