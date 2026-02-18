@@ -2,12 +2,13 @@ import { FastifyInstance } from 'fastify';
 import { getAdminController } from '../../controllers/admin/getAdmin.controller.js';
 import { adminResponseSchema } from '../../validators/admin.schema.js';
 import isAuth from '../../middlewares/isAuth.js';
-import requireAdmin from '../../middlewares/requireAdmin.js';
+import { requireAdmin } from '../../middlewares/requireAdmin.js';
 
 export async function getAdminRoute(fastify: FastifyInstance) {
-    fastify.get('/:id', {
+    fastify.get('/buscar/:id', {
         schema: {
-            description: 'Obtener un administrador específico por ID',
+            description: 'Retorna los datos completos de un administrador específico buscado por su MongoDB ObjectId.',
+            summary: 'Obtener administrador por ID',
             tags: ['Admin'],
             params: {
                 type: 'object',
@@ -44,7 +45,5 @@ export async function getAdminRoute(fastify: FastifyInstance) {
             },
         },
         preHandler: [isAuth, requireAdmin], // ✅ Requiere autenticación y rol de admin
-    }, async (request, reply) => {
-        return getAdminController(request as any, reply);
-    });
+    }, getAdminController);
 }

@@ -2,10 +2,11 @@ import { FastifyInstance } from 'fastify';
 import { GetPassengersController } from '../controllers/passengers/GetPassengersController.js';
 
 export async function passengersRoutes(fastify: FastifyInstance) {
-  fastify.get('/passengers', {
+  fastify.get('/pasajeros', {
     schema: {
-      description: 'Obtener lista de pasajeros con filtros opcionales',
-      tags: ['Passengers'],
+      description: 'Retorna la lista de pasajeros registrados en el sistema. Soporta filtros opcionales por email, nombre completo y rango de crédito.',
+      summary: 'Listar pasajeros',
+      tags: ['Pasajeros'],
       querystring: {
         type: 'object',
         properties: {

@@ -2,11 +2,11 @@ import { FastifyInstance } from "fastify";
 import mongoose from "mongoose";
 
 export async function databaseRoutes(fastify: FastifyInstance) {
-  fastify.get("/test-db", {
+  fastify.get("/probar-base-de-datos", {
     schema: {
-      description: "Test database connection",
+      description: "Prueba la conexión con la base de datos MongoDB y retorna el estado de la conexión",
       tags: ["Database"],
-      summary: "Test DB",
+      summary: "Probar conexión a la base de datos",
       response: {
         200: {
           type: "object",

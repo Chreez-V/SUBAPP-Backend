@@ -5,12 +5,12 @@ import { createJwtMiddleware } from '../../middlewares/authMiddleware.js';
 export async function currentUserRoute(fastify: FastifyInstance) {
   const authenticate = createJwtMiddleware(fastify);
 
-  fastify.get('/me', {
+  fastify.get('/usuario-actual', {
     preHandler: authenticate,
     schema: {
       tags: ['Auth'],
-      description: 'Obtener información del usuario autenticado',
-      summary: 'Get current authenticated user',
+      description: 'Retorna la información completa del usuario autenticado a partir de su token JWT. Requiere el header Authorization: Bearer <token>.',
+      summary: 'Obtener usuario autenticado',
       security: [{ bearerAuth: [] }],
       response: {
         200: {
@@ -23,12 +23,16 @@ export async function currentUserRoute(fastify: FastifyInstance) {
                 id: { type: 'string' },
                 email: { type: 'string' },
                 fullName: { type: 'string' },
-                role: { type: 'string', enum: ['passenger', 'driver', 'admin'] },
+                role: { type: 'string', enum: ['passenger', 'driver', 'admin', 'support'] },
+                profilePictureUrl: { type: 'string', nullable: true },
                 credit: { type: 'number' },
                 licenseNumber: { type: 'string' },
                 phone: { type: 'string' },
                 status: { type: 'string' },
-                lastLogin: { type: 'string' },
+lastLogin: { type: 'string' },
+                department: { type: 'string' },
+                level: { type: 'string' },
+                supportStatus: { type: 'string' },
                 createdAt: { type: 'string' },
                 updatedAt: { type: 'string' },
               }

@@ -70,12 +70,12 @@ const createFirstAdminSchema = {
 
 export async function createFirstAdminRoute(fastify: FastifyInstance) {
     // ✅ SIN PROTECCIÓN - Solo funciona si no hay admins en la BD
-    fastify.post('/setup', {
+    fastify.post('/configuracion-inicial', {
         schema: {
             ...createFirstAdminSchema,
             tags: ['Admin Setup'],
-            description: '🔓 Crear el PRIMER administrador (solo funciona si no hay admins)',
-            summary: 'Setup inicial - Crear primer admin'
+            description: '🔓 Crea el PRIMER administrador del sistema. Este endpoint solo funciona cuando no existe ningún administrador registrado en la base de datos. Úsalo solo en la configuración inicial.',
+            summary: 'Crear primer administrador (setup inicial)'
         }
     }, createAdminController);
 }

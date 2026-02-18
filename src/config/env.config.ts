@@ -24,6 +24,9 @@ interface Envs {
     JWT_SECRET: string;
     GOOGLE_CLIENT_ID: string;
     OSRM_URL?: string;
+    SUPABASE_URL: string;
+    SUPABASE_KEY: string;
+    SUPABASE_BUCKET: string;
 }
 
 const envsSchema = z.object({
@@ -33,6 +36,9 @@ const envsSchema = z.object({
     JWT_SECRET: z.string().min(10),
     GOOGLE_CLIENT_ID: z.string().min(1).optional().default(""),
     OSRM_URL: z.string().url().optional(),
+    SUPABASE_URL: z.string().url(),
+    SUPABASE_KEY: z.string().min(1),
+    SUPABASE_BUCKET: z.string().min(1),
 });
 
 const result = envsSchema.safeParse({ ...process.env });
@@ -62,4 +68,7 @@ export const envs = {
     JWT_SECRET: envsValidates.JWT_SECRET,
     GOOGLE_CLIENT_ID: envsValidates.GOOGLE_CLIENT_ID,
     OSRM_URL: envsValidates.OSRM_URL,
+    SUPABASE_URL: envsValidates.SUPABASE_URL,
+    SUPABASE_KEY: envsValidates.SUPABASE_KEY,
+    SUPABASE_BUCKET: envsValidates.SUPABASE_BUCKET,
 };

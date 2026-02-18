@@ -47,12 +47,12 @@ const adminLoginSchema = {
 };
 
 export async function adminLoginRoute(fastify: FastifyInstance) {
-    fastify.post('/login', {
+    fastify.post('/iniciar-sesion', {
         schema: {
             ...adminLoginSchema,
             tags: ['Admin Auth'],
-            description: 'Login exclusivo para administradores',
-            summary: 'Autenticación de administradores'
+            description: 'Autentica a un administrador con email y contraseña. Retorna un token JWT exclusivo para el panel de administración.',
+            summary: 'Iniciar sesión de administrador'
         }
     }, AdminLoginController.login);
 }

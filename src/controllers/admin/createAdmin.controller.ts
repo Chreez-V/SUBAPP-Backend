@@ -1,18 +1,16 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { createAdmin, findAdminByEmail } from '../../models/admin.js';
 
-interface CreateAdminBody {
-    fullName: string;
-    email: string;
-    password: string;
-    phone?: string;
-}
-
 export async function createAdminController(
-    request: FastifyRequest<{ Body: CreateAdminBody }>,
+    request: FastifyRequest,
     reply: FastifyReply
 ) {
-    const { fullName, email, password, phone } = request.body;
+    const { fullName, email, password, phone } = request.body as {
+        fullName: string;
+        email: string;
+        password: string;
+        phone?: string;
+    };
 
     // Validar datos requeridos
     if (!fullName || !email || !password) {

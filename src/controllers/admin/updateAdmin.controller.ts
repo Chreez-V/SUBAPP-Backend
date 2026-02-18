@@ -3,24 +3,17 @@ import { getAdmins } from '../../models/admin.js';
 import { Admin } from '../../models/admin.js';
 import bcrypt from 'bcryptjs';
 
-interface UpdateAdminParams {
-    id: string;
-}
-
-interface UpdateAdminBody {
-    fullName?: string;
-    email?: string;
-    password?: string;
-    phone?: string;
-}
-
-
 export async function updateAdminController(
-    request: FastifyRequest<{ Params: UpdateAdminParams; Body: UpdateAdminBody }>,
+    request: FastifyRequest,
     reply: FastifyReply
 ) {
-    const { id } = request.params;
-    const updateData = request.body;
+    const { id } = request.params as { id: string };
+    const updateData = request.body as {
+        fullName?: string;
+        email?: string;
+        password?: string;
+        phone?: string;
+    };
 
     try {
         // Verificar que el admin existe

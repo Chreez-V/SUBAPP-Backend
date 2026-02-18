@@ -1,11 +1,14 @@
 import { FastifyInstance } from 'fastify';
 import { logoutController } from '../../controllers/auth/Logout_Controller.js'; 
-import isAuth from '../../middlewares/isAuth.js';
+import { createJwtMiddleware } from '../../middlewares/authMiddleware.js';
 
 export default async function logoutRoute(fastify: FastifyInstance) {
-    fastify.post('/logout', {
+    const authenticate = createJwtMiddleware(fastify);
+    
+    fastify.post('/cerrar-sesion', {
         schema: {
-          description: 'Cerrar sesión del usuario actual (invalida el token en el cliente)',
+          description: 'Cierra la sesión del usuario autenticado. El cliente debe eliminar el token JWT almacenado localmente.',
+          summary: 'Cerrar sesión',
           tags: ['Auth'],
           security: [{ bearerAuth: [] }],
           headers: {
@@ -34,6 +37,6 @@ export default async function logoutRoute(fastify: FastifyInstance) {
             }
           }
         },
-        preHandler: [isAuth]
+        preHandler: authenticate
     }, logoutController);
 }

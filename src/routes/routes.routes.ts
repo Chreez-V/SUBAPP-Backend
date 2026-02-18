@@ -12,10 +12,11 @@ import {
 export async function routesRoutes(fastify: FastifyInstance) {
   
   // GET - Get all routes
-  fastify.get('/routes', {
+  fastify.get('/rutas', {
     schema: {
-      description: 'Get all routes (active and inactive)',
-      tags: ['Routes'],
+      description: 'Retorna todas las rutas del sistema, incluyendo activas e inactivas.',
+      summary: 'Listar todas las rutas',
+      tags: ['Rutas'],
       response: {
         200: {
           type: 'object',
@@ -30,56 +31,62 @@ export async function routesRoutes(fastify: FastifyInstance) {
   }, getAllRoutes);
 
   // GET - Get only active routes
-  fastify.get('/routes/active', {
+  fastify.get('/rutas/activas', {
     schema: {
-      description: 'Get only active routes',
-      tags: ['Routes'],
+      description: 'Retorna únicamente las rutas con estado activo disponibles para asignación de viajes.',
+      summary: 'Listar rutas activas',
+      tags: ['Rutas'],
     }
   }, getActiveRoutes);
 
   // GET - Get route by ID
-  fastify.get('/routes/:id', {
+  fastify.get('/rutas/buscar/:id', {
     schema: {
-      description: 'Get a specific route by ID',
-      tags: ['Routes'],
+      description: 'Retorna los datos completos de una ruta específica buscada por su ID de MongoDB.',
+      summary: 'Obtener ruta por ID',
+      tags: ['Rutas'],
       params: {
         type: 'object',
         properties: {
-          id: { type: 'string' }
+          id: { type: 'string', description: 'ID de la ruta (MongoDB ObjectId)' }
         }
       }
     }
   }, getRouteById);
 
   // POST - Create new route
-  fastify.post('/routes', {
+  fastify.post('/rutas/crear', {
     schema: {
-      description: 'Create a new route using OSRM',
-      tags: ['Routes'],
+      description: 'Crea una nueva ruta de transporte usando OSRM para calcular el trazado entre el punto de inicio y el punto de destino.',
+      summary: 'Crear ruta',
+      tags: ['Rutas'],
       body: {
         type: 'object',
         required: ['name', 'startPoint', 'endPoint'],
         properties: {
-          name: { type: 'string' },
+          name: { type: 'string', description: 'Nombre identificador de la ruta' },
           startPoint: {
             type: 'object',
+            description: 'Coordenadas del punto de inicio',
             required: ['lat', 'lng'],
             properties: {
-              lat: { type: 'number' },
-              lng: { type: 'number' }
+              lat: { type: 'number', description: 'Latitud del punto de inicio' },
+              lng: { type: 'number', description: 'Longitud del punto de inicio' }
             }
           },
           endPoint: {
             type: 'object',
+            description: 'Coordenadas del punto de destino',
             required: ['lat', 'lng'],
             properties: {
-              lat: { type: 'number' },
-              lng: { type: 'number' }
+              lat: { type: 'number', description: 'Latitud del punto de destino' },
+              lng: { type: 'number', description: 'Longitud del punto de destino' }
             }
           },
-          fare: { type: 'number' },
+          fare: { type: 'number', description: 'Tarifa de la ruta (opcional)' },
           schedules: { 
             type: 'array',
+            description: 'Horarios de la ruta (opcional)',
             items: { type: 'string' }
           }
         }
@@ -88,24 +95,26 @@ export async function routesRoutes(fastify: FastifyInstance) {
   }, createRoute);
 
   // PATCH - Update a route
-  fastify.patch('/routes/:id', {
+  fastify.patch('/rutas/actualizar/:id', {
     schema: {
-      description: 'Update route information',
-      tags: ['Routes'],
+      description: 'Actualiza los campos de una ruta existente. Solo se modifican los campos enviados en el cuerpo.',
+      summary: 'Actualizar ruta',
+      tags: ['Rutas'],
       params: {
         type: 'object',
         properties: {
-          id: { type: 'string' }
+          id: { type: 'string', description: 'ID de la ruta (MongoDB ObjectId)' }
         }
       },
       body: {
         type: 'object',
         properties: {
-          name: { type: 'string' },
-          fare: { type: 'number' },
-          isActive: { type: 'boolean' },
+          name: { type: 'string', description: 'Nuevo nombre de la ruta' },
+          fare: { type: 'number', description: 'Nueva tarifa' },
+          isActive: { type: 'boolean', description: 'Estado de la ruta (activa/inactiva)' },
           schedules: { 
             type: 'array',
+            description: 'Nuevos horarios',
             items: { type: 'string' }
           }
         }
@@ -114,28 +123,30 @@ export async function routesRoutes(fastify: FastifyInstance) {
   }, updateRoute);
 
   // DELETE - Deactivate route (soft delete)
-  fastify.delete('/routes/:id', {
+  fastify.delete('/rutas/desactivar/:id', {
     schema: {
-      description: 'Deactivate a route (soft delete)',
-      tags: ['Routes'],
+      description: 'Desactiva una ruta marcándola como inactiva (eliminación lógica). La ruta sigue en la base de datos pero no aparece como disponible.',
+      summary: 'Desactivar ruta',
+      tags: ['Rutas'],
       params: {
         type: 'object',
         properties: {
-          id: { type: 'string' }
+          id: { type: 'string', description: 'ID de la ruta (MongoDB ObjectId)' }
         }
       }
     }
   }, deleteRoute);
 
   // DELETE - Permanently delete
-  fastify.delete('/routes/:id/permanent', {
+  fastify.delete('/rutas/eliminar/:id', {
     schema: {
-      description: 'Permanently delete a route',
-      tags: ['Routes'],
+      description: 'Elimina permanentemente una ruta del sistema. Esta acción no puede deshacerse.',
+      summary: 'Eliminar ruta permanentemente',
+      tags: ['Rutas'],
       params: {
         type: 'object',
         properties: {
-          id: { type: 'string' }
+          id: { type: 'string', description: 'ID de la ruta (MongoDB ObjectId)' }
         }
       }
     }

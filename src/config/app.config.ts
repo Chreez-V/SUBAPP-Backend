@@ -5,6 +5,7 @@ import fastifySwaggerUi from '@fastify/swagger-ui';
 import fastifyCors from '@fastify/cors';
 import { routes } from "../api/index.js";
 import jwtPlugin from "./jwt.js";
+import fastifyMultipart from '@fastify/multipart';
 
 export async function app() {
   const server = Fastify({
@@ -12,6 +13,13 @@ export async function app() {
       transport: {
         target: "pino-pretty",
       }
+    },
+  });
+
+  // ✅ Multipart Configuration
+  await server.register(fastifyMultipart, {
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB
     },
   });
 
