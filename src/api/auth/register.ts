@@ -7,7 +7,7 @@ import { registerController } from '../../controllers/auth/userRegister_controll
  */
 
 export async function register( fastify: FastifyInstance){
-  fastify.post('/registrarse', {
+  fastify.post('/register', {
     schema: {
       description: 'Crea una nueva cuenta de usuario en el sistema. Los roles disponibles son: passenger (pasajero), driver (conductor) y admin (administrador).',
       summary: 'Registrar nuevo usuario',

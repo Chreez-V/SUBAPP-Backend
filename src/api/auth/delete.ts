@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { deleteUserController } from '../../controllers/auth/DeleteUser_controller.js';
 
 export async function usersRoutes(fastify: FastifyInstance) {
-  fastify.delete('/usuarios', {
+  fastify.delete('/users', {
     schema: {
       description: 'Elimina permanentemente un usuario del sistema buscado por su dirección de correo electrónico.',
       summary: 'Eliminar usuario por correo',

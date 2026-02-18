@@ -4,7 +4,7 @@ import { FastifyInstance } from "fastify";
 
 export async function LoginRoutes(fastify: FastifyInstance) {
   const authenticate = createJwtMiddleware(fastify);
-  fastify.post('/iniciar-sesion', {
+  fastify.post('/login', {
     schema: {
       ...loginSchema,
       tags: ['Auth'],
