@@ -1,19 +1,13 @@
 import { Schema, model, Document } from 'mongoose'; 
 export interface IBusFare extends Document { 
-  routeId: Schema.Types.ObjectId; 
-  fare: number; 
+  amount: number; 
   createdAt: Date; 
   updatedAt: Date; 
 } 
 const BusFareSchema = new Schema<IBusFare>( 
   { 
-    routeId: { 
-type: Schema.Types.ObjectId, 
-      ref: 'Route', 
-      required: true, 
-    }, 
-    fare: { 
-type: Number, 
+    amount: { 
+      type: Number, 
       required: true, 
     }, 
   }, 
