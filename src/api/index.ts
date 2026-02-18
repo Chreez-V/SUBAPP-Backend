@@ -8,6 +8,7 @@ import changePasswordRoutes from "./auth/change-password.js";
 import { usersRoutes } from "./auth/delete.js";
 import { driversRoutes } from "./drivers/drivers.routes.js";
 import { busFareRoutes } from "./busfare/busFare.routes.js";
+import tripRoutes from "./trip.routes.js";
 import { passengersRoutes } from "./passengers.routes.js";
 import { googleAuthRoutes } from "./auth/google-auth.js";
 import { routesRoutes } from "../routes/routes.routes.js";
@@ -39,11 +40,14 @@ export async function routes(fastify: FastifyInstance) {
   // Routes management
   await fastify.register(routesRoutes, { prefix: '/api' });
 
-  // Bus Fare routes
-  await fastify.register(busFareRoutes, { prefix: '/api/busfares' });
+  // Pasaje routes
+  await fastify.register(busFareRoutes, { prefix: '/api/pasajes' });
   
-  // Drivers routes
-  await fastify.register(driversRoutes, { prefix: '/api/drivers' });
+  // Conductores routes
+  await fastify.register(driversRoutes, { prefix: '/api/conductores' });
+
+  // Viajes routes
+  await fastify.register(tripRoutes, { prefix: '/api/viajes' });
 
   // Support routes
   await fastify.register(supportRoutes, { prefix: '/api' });
