@@ -1,72 +1,33 @@
 import { mqttClient } from "../client.js";
 
-interface MQTTBusPayload {
-  bus_id: string;
-  latitude: number;
-  longitude: number;
-  speed: number;
-}
-
 interface driver {
   name: string,
-  licenseNumber: string,
+  number_plate: string,
   status: string,
   location: {
     latitude: number,
     longitude: number,
   },
 }
-interface DriverMap {
-  [id: string]: driver;
-}
 
-async function getActiveDrivers(): Promise<driver[]> {
-  const response = await fetch("https://subapp-api.onrender.com/api/conductores/activos");
-  let data = await response.json();
-  return data.data.map((payload: Partial<driver>) => ({
-    name: payload.name,
-    licenseNumber: payload.licenseNumber,
-    status: payload.status,
-    location: {
-      latitude: 0,
-      longitude: 0,
-    }
-  })) as driver[]; // Cast the final result to your driver array
-}
-
-function createDriverMap(drivers: driver[]): DriverMap {
-  const acc: DriverMap = {};
-  for (const driver of drivers) {
-    // Map the driver object to its license number key
-    acc[driver.licenseNumber] = driver;
-  }
-  return acc;
-}
-
-// Example usage: connect and subscribe to a test topic
 export async function startMqtt() {
-  let drivers = await getActiveDrivers();
-  let driverHashMap = createDriverMap(drivers)
+  let driverHashMap: Map<string, driver> = new Map();
 
   mqttClient.connect();
 
   mqttClient.subscribe("subapp/driver", (topic, payload) => {
     const rawPayload = payload.toString("utf-8")
-    const data: MQTTBusPayload = JSON.parse(rawPayload);
+    const data: driver = JSON.parse(rawPayload);
 
-    const driverEntry = Object.values(driverHashMap).find(
-      (d) => d.licenseNumber === data.bus_id
-    );
-    if (driverEntry) {
-      console.log("updating location for: ", driverEntry.licenseNumber)
-      driverEntry.location = {
-        latitude: data.latitude,
-        longitude: data.longitude,
-      };
-    } else {
-      console.warn(`No driver found with license: ${data.bus_id}`);
+    if (data.status === "inactive") {
+      console.log("Deleting my friend")
+      driverHashMap.delete(data.number_plate)
     }
-    console.log("Data de bus recibida:", topic, driverHashMap[data.bus_id]);
+    else {
+      console.log("drivers updated")
+      driverHashMap.set(data.number_plate, data)
+    }
+    // console.log("Data de bus recibida:", topic, driverHashMap.get(data.number_plate));
     try {
       // mqttClient.publish("subapp/passenger", payload.toString());
     } catch (err) {
@@ -74,10 +35,13 @@ export async function startMqtt() {
     }
   });
   const intervalId = setInterval(() => {
-    console.log(driverHashMap);
+    if (driverHashMap.size != 0) {
+      const payload = JSON.stringify([...driverHashMap.values()]);
+      console.log("sending: \n", payload)
+      mqttClient.publish("subapp/passenger", payload);
 
-    // mqttClient.publish("subapp/passenger", driverHashMap);
-  }, 5000);
+    }
+  }, 2000);
 
   // publish a test message after connect
   // setTimeout(() => {
