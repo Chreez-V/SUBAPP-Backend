@@ -22,17 +22,15 @@ export async function startMqtt() {
     console.log("received driver data:", topic, data);
 
     if (data.status === "inactive") {
-      console.log("Deleting my friend")
+      const payload = JSON.stringify([...driverHashMap.values()]);
+      // console.log("Deleting my friend")
       driverHashMap.delete(data.number_plate)
+      console.log("updated active buses: ")
+      mqttClient.publish("subapp/passenger", payload);
     }
     else {
       console.log("drivers updated")
       driverHashMap.set(data.number_plate, data)
-    }
-    try {
-      // mqttClient.publish("subapp/passenger", payload.toString());
-    } catch (err) {
-      console.warn("Could not publish test message", err);
     }
   });
   const intervalId = setInterval(() => {
@@ -46,7 +44,7 @@ export async function startMqtt() {
         console.warn("Could not publish test message", err);
       }
     }
-  }, 2000);
+  }, 5000);
 
   // publish a test message after connect
   // setTimeout(() => {
