@@ -19,6 +19,7 @@ import { adminRoutes } from "./admin/index.js";
 import { currentUserRoute } from "./auth/me.js";
 import supportRoutes from "./support/index.js";
 import { profileRoutes } from "./auth/profile.routes.js";
+import {collectorRoutes} from "./busCollector/busCollector.routes.js"
 
 export async function routes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);
@@ -58,7 +59,10 @@ export async function routes(fastify: FastifyInstance) {
   // Conductores routes
   await fastify.register(driversRoutes, { prefix: '/api/conductores' });
 
+  //Colectores routes
+    await fastify.register(collectorRoutes, {prefix: 'api/colectores'})
   // Viajes routes
+
   await fastify.register(tripRoutes, { prefix: '/api/viajes' });
 
   // Support routes
