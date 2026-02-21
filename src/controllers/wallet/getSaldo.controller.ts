@@ -1,41 +1,50 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-// Ajusta la ruta de importación de tu modelo User según la estructura de tu proyecto
 import { User } from '../../models/user'
+import { Driver } from '../../models/driver' // ¡Importamos también el modelo Driver!
 
 export async function getSaldo(request: FastifyRequest, reply: FastifyReply) {
   try {
-    // Obtenemos el ID del usuario autenticado
-    const userId = (request as any).user?.id
+    // Extraemos el id y el role del token decodificado
+    const { id: userId, role } = (request as any).user || {}
 
-    if (!userId) {
-      return reply.code(401).send({
-        success: false,
-        error: 'Usuario no autorizado',
-      })
+    if (!userId || !role) {
+      return reply.status(401).send({ success: false, error: 'No autorizado' })
     }
 
-    // Buscamos al usuario en la BD y solo traemos el campo 'credit' para ser eficientes
-    const user = await User.findById(userId).select('credit')
+    let saldo = 0
 
-    if (!user) {
-      return reply.code(404).send({
-        success: false,
-        error: 'Usuario no encontrado',
-      })
+    // Buscamos el saldo dependiendo del rol del usuario
+    if (role === 'passenger') {
+      const user = await User.findById(userId).select('credit')
+      if (!user) {
+        return reply
+          .status(404)
+          .send({ success: false, error: 'Pasajero no encontrado' })
+      }
+      saldo = user.credit || 0
+    } else if (role === 'driver') {
+      const driver = await Driver.findById(userId).select('credit')
+      if (!driver) {
+        return reply
+          .status(404)
+          .send({ success: false, error: 'Conductor no encontrado' })
+      }
+      saldo = driver.credit || 0
+    } else {
+      // Si un admin intenta ver su saldo (no tienen billetera)
+      return reply
+        .status(403)
+        .send({ success: false, error: 'Rol no autorizado para esta acción' })
     }
 
-    // Respondemos con código 200 y el saldo actual
-    return reply.code(200).send({
+    return reply.status(200).send({
       success: true,
-      data: {
-        saldo: user.credit || 0, // Si credit es undefined por alguna razón, devolvemos 0
-      },
+      data: { saldo },
     })
   } catch (error) {
     console.error('Error al obtener saldo:', error)
-    return reply.code(500).send({
-      success: false,
-      error: 'Error interno del servidor',
-    })
+    return reply
+      .status(500)
+      .send({ success: false, error: 'Error interno del servidor' })
   }
 }
