@@ -1,4 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
+import mongoose from 'mongoose';
 import { Report, REPORT_REASONS } from '../models/report.js';
 import { Route } from '../models/route.js';
 import { RouteSet } from '../models/routeSet.js';
@@ -22,6 +23,11 @@ interface ResolveReportBody {
 
 interface ReportParams {
   id: string;
+}
+
+interface MovimientoTotalQuery {
+  desde?: string;
+  hasta?: string;
 }
 
 // ── Controllers ─────────────────────────────────────────
@@ -339,4 +345,154 @@ export const getReportReasons = async (
       label: reasonLabels[r] || r,
     })),
   });
+};
+
+/**
+ * GET /api/reportes/movimiento-total - Total movement report for transactions
+ */
+export const getMovimientoTotalReport = async (
+  request: FastifyRequest<{ Querystring: MovimientoTotalQuery }>,
+  reply: FastifyReply
+) => {
+  const { desde, hasta } = request.query || {};
+
+  if (!desde || !hasta) {
+    return reply.status(400).send({
+      success: false,
+      error: 'Los parametros "desde" y "hasta" son obligatorios (YYYY-MM-DD).',
+    });
+  }
+
+  const start = new Date(desde);
+  const end = new Date(hasta);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return reply.status(400).send({
+      success: false,
+      error: 'Formato de fecha invalido. Use YYYY-MM-DD.',
+    });
+  }
+
+  start.setUTCHours(0, 0, 0, 0);
+  end.setUTCHours(23, 59, 59, 999);
+
+  try {
+    const collection = mongoose.connection.collection('transactions');
+
+    const [result] = await collection.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: start, $lte: end },
+        },
+      },
+      {
+        $facet: {
+          byType: [
+            {
+              $group: {
+                _id: '$type',
+                total: { $sum: '$amount' },
+                count: { $sum: 1 },
+              },
+            },
+          ],
+          totals: [
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: '$amount' },
+                totalCount: { $sum: 1 },
+                users: { $addToSet: '$userId' },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                totalAmount: 1,
+                totalCount: 1,
+                uniqueUsers: { $size: '$users' },
+              },
+            },
+          ],
+        },
+      },
+    ]).toArray();
+
+    const byType = (result?.byType || []) as Array<{
+      _id: string;
+      total: number;
+      count: number;
+    }>;
+
+    const totals = (result?.totals?.[0] || {
+      totalAmount: 0,
+      totalCount: 0,
+      uniqueUsers: 0,
+    }) as {
+      totalAmount: number;
+      totalCount: number;
+      uniqueUsers: number;
+    };
+
+    const typeTotals = byType.reduce<Record<string, number>>((acc, item) => {
+      acc[item._id] = item.total || 0;
+      return acc;
+    }, {});
+
+    const ingresosMap: Record<string, string> = {
+      recarga: 'recarga',
+      transferencia_recibida: 'transferencia_recibida',
+      reembolso: 'reembolso',
+      cobro_pasaje: 'cobro_pasaje',
+    };
+
+    const egresosMap: Record<string, string> = {
+      pago_pasaje_nfc: 'pago_pasaje_nfc',
+      pago_pasaje_qr: 'pago_pasaje_qr',
+      pago_pasaje_movil: 'pago_pasaje_movil',
+      transferencia_enviada: 'transferencia_enviada',
+      retiro: 'retiro',
+    };
+
+    const ingresos: Record<string, number> = {};
+    const egresos: Record<string, number> = {};
+
+    Object.entries(ingresosMap).forEach(([type, key]) => {
+      ingresos[key] = typeTotals[type] || 0;
+    });
+
+    Object.entries(egresosMap).forEach(([type, key]) => {
+      egresos[key] = typeTotals[type] || 0;
+    });
+
+    const ingresosTotal = Object.values(ingresos).reduce((sum, value) => sum + value, 0);
+    const egresosTotal = Object.values(egresos).reduce((sum, value) => sum + value, 0);
+    const balanceNeto = ingresosTotal - egresosTotal;
+    const totalTransacciones = totals.totalCount || 0;
+    const promedioPorTransaccion = totalTransacciones > 0
+      ? Math.round((totals.totalAmount / totalTransacciones) * 100) / 100
+      : 0;
+
+    return reply.status(200).send({
+      periodo: { desde, hasta },
+      ingresos: {
+        ...ingresos,
+        total: ingresosTotal,
+      },
+      egresos: {
+        ...egresos,
+        total: egresosTotal,
+      },
+      balance_neto: balanceNeto,
+      total_transacciones: totalTransacciones,
+      pasajeros_activos: totals.uniqueUsers || 0,
+      promedio_por_transaccion: promedioPorTransaccion,
+    });
+  } catch (error) {
+    console.error('Error en getMovimientoTotalReport:', error);
+    return reply.status(500).send({
+      success: false,
+      error: 'Error al obtener el movimiento total',
+    });
+  }
 };

@@ -7,6 +7,7 @@ import {
   resolveReport,
   deleteReport,
   getReportReasons,
+  getMovimientoTotalReport,
 } from '../controllers/reports.controller.js';
 
 export async function reportsRoutes(fastify: FastifyInstance) {
@@ -36,6 +37,23 @@ export async function reportsRoutes(fastify: FastifyInstance) {
       },
     },
   }, getReportReasons);
+
+  // GET - Total movement report by period
+  fastify.get('/reportes/movimiento-total', {
+    schema: {
+      description: 'Retorna el resumen de ingresos y egresos por tipo de transaccion en un periodo.',
+      summary: 'Resumen de movimiento total',
+      tags: ['Reportes'],
+      querystring: {
+        type: 'object',
+        required: ['desde', 'hasta'],
+        properties: {
+          desde: { type: 'string', description: 'Fecha inicio (YYYY-MM-DD)' },
+          hasta: { type: 'string', description: 'Fecha fin (YYYY-MM-DD)' },
+        },
+      },
+    },
+  }, getMovimientoTotalReport);
 
   // GET - List all reports
   fastify.get('/reportes', {
