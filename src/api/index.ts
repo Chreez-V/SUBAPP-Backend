@@ -19,6 +19,7 @@ import { adminRoutes } from "./admin/index.js";
 import { currentUserRoute } from "./auth/me.js";
 import supportRoutes from "./support/index.js";
 import { profileRoutes } from "./auth/profile.routes.js";
+import { nfcRoutes } from './nfc/nfc.routes';
 
 export async function routes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);
@@ -63,4 +64,7 @@ export async function routes(fastify: FastifyInstance) {
 
   // Support routes
   await fastify.register(supportRoutes, { prefix: '/api' });
+
+    // NFC routes
+  await fastify.register(nfcRoutes, { prefix: '/api/nfc' });
 }
