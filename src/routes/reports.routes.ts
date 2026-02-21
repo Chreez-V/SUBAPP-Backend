@@ -10,6 +10,7 @@ import {
   getMovimientoTotalReport,
   getTransaccionesReport,
   getCuotaDiariaReport,
+  getCobrosPorConductor,
 } from '../controllers/reports.controller.js';
 
 export async function reportsRoutes(fastify: FastifyInstance) {
@@ -102,6 +103,29 @@ export async function reportsRoutes(fastify: FastifyInstance) {
       },
     },
   }, getCuotaDiariaReport);
+
+  // GET - Accumulated charges by driver
+  fastify.get('/reportes/porconductor/:driverId', {
+    schema: {
+      description: 'Retorna los cobros acumulados por conductor para pagos NFC y QR.',
+      summary: 'Cobros acumulados por conductor',
+      tags: ['Reportes'],
+      querystring: {
+        type: 'object',
+        properties: {
+          desde: { type: 'string', description: 'Fecha inicio (YYYY-MM-DD)' },
+          hasta: { type: 'string', description: 'Fecha fin (YYYY-MM-DD)' },
+        },
+      },
+      params: {
+        type: 'object',
+        properties: {
+          driverId: { type: 'string', description: 'ID del conductor' },
+        },
+        required: ['driverId'],
+      },
+    },
+  }, getCobrosPorConductor);
 
   // GET - List all reports
   fastify.get('/reportes', {

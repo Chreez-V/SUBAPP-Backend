@@ -25,6 +25,10 @@ interface ReportParams {
   id: string;
 }
 
+interface DriverParams {
+  driverId: string;
+}
+
 interface MovimientoTotalQuery {
   desde?: string;
   hasta?: string;
@@ -51,6 +55,11 @@ interface TransaccionesQuery {
 
 interface CuotaDiariaQuery {
   cuota?: string;
+}
+
+interface CobrosPorConductorQuery {
+  desde?: string;
+  hasta?: string;
 }
 
 // ── Controllers ─────────────────────────────────────────
@@ -767,6 +776,145 @@ export const getCuotaDiariaReport = async (
     return reply.status(500).send({
       success: false,
       error: 'Error al obtener la cuota diaria',
+    });
+  }
+};
+
+/**
+ * GET /api/reportes/porconductor/:driverId - Accumulated charges by driver
+ */
+export const getCobrosPorConductor = async (
+  request: FastifyRequest<{ Params: DriverParams; Querystring: CobrosPorConductorQuery }>,
+  reply: FastifyReply
+) => {
+  const { driverId } = request.params;
+  const { desde, hasta } = request.query || {};
+
+  if (!mongoose.Types.ObjectId.isValid(driverId)) {
+    return reply.status(400).send({
+      success: false,
+      error: 'El parametro "driverId" no es un ObjectId valido.',
+    });
+  }
+
+  let start: Date | undefined;
+  let end: Date | undefined;
+
+  if (desde) {
+    start = new Date(desde);
+    if (Number.isNaN(start.getTime())) {
+      return reply.status(400).send({
+        success: false,
+        error: 'Formato de fecha invalido para "desde". Use YYYY-MM-DD.',
+      });
+    }
+    start.setUTCHours(0, 0, 0, 0);
+  }
+
+  if (hasta) {
+    end = new Date(hasta);
+    if (Number.isNaN(end.getTime())) {
+      return reply.status(400).send({
+        success: false,
+        error: 'Formato de fecha invalido para "hasta". Use YYYY-MM-DD.',
+      });
+    }
+    end.setUTCHours(23, 59, 59, 999);
+  }
+
+  const match: Record<string, unknown> = {
+    driverId: new mongoose.Types.ObjectId(driverId),
+    type: { $in: ['pago_pasaje_nfc', 'pago_pasaje_qr'] },
+  };
+
+  if (start || end) {
+    const dateFilter: Record<string, Date> = {};
+    if (start) dateFilter.$gte = start;
+    if (end) dateFilter.$lte = end;
+    match.createdAtDate = dateFilter;
+  }
+
+  try {
+    const collection = mongoose.connection.collection('transactions');
+    const pipeline: Record<string, unknown>[] = [];
+
+    if (start || end) {
+      pipeline.push({
+        $addFields: {
+          createdAtDate: {
+            $convert: {
+              input: '$createdAt',
+              to: 'date',
+              onError: null,
+              onNull: null,
+            },
+          },
+        },
+      });
+    }
+
+    pipeline.push(
+      { $match: match },
+      {
+        $facet: {
+          byType: [
+            {
+              $group: {
+                _id: '$type',
+                total: { $sum: '$amount' },
+                count: { $sum: 1 },
+              },
+            },
+          ],
+          totals: [
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: '$amount' },
+                totalCount: { $sum: 1 },
+              },
+            },
+          ],
+        },
+      }
+    );
+
+    const [result] = await collection.aggregate(pipeline).toArray();
+
+    const byType = (result?.byType || []) as Array<{
+      _id: string;
+      total: number;
+      count: number;
+    }>;
+
+    const totals = (result?.totals?.[0] || {
+      totalAmount: 0,
+      totalCount: 0,
+    }) as {
+      totalAmount: number;
+      totalCount: number;
+    };
+
+    const porTipo = byType.reduce<Record<string, number>>((acc, item) => {
+      acc[item._id] = item.total || 0;
+      return acc;
+    }, {
+      pago_pasaje_nfc: 0,
+      pago_pasaje_qr: 0,
+    });
+
+    return reply.status(200).send({
+      success: true,
+      driverId,
+      total_cobrado: totals.totalAmount || 0,
+      cantidad_cobros: totals.totalCount || 0,
+      por_tipo: porTipo,
+    });
+  } catch (error) {
+    console.error('Error en getCobrosPorConductor:', error);
+    return reply.status(500).send({
+      success: false,
+      error: 'Error al obtener los cobros por conductor',
     });
   }
 };
