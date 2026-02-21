@@ -1,13 +1,14 @@
 import { FastifyInstance } from 'fastify'
 import { getSaldo } from '../../controllers/wallet/getSaldo.controller.js'
-import { createJwtMiddleware } from '../../middlewares/authMiddleware'
-import isAuth from '@/middlewares/isAuth.js'
+import { createJwtMiddleware } from '../../middlewares/authMiddleware.js'
 
-export async function billeteraRoutes(fastify: FastifyInstance) {
+export async function walletRoutes(fastify: FastifyInstance) {
+  // 1. Creamos el middleware
   const authenticate = createJwtMiddleware(fastify)
 
-  fastify.addHook('preHandler', isAuth) // Descomenta esto para proteger todas las rutas de este archivo
-  // Endpoint: GET /api/billetera/saldo
+  // 2. Usamos 'authenticate' como preHandler para proteger las rutas de billetera
+  fastify.addHook('preHandler', authenticate)
 
+  // Endpoint: GET /api/wallet/saldo
   fastify.get('/saldo', getSaldo)
 }
