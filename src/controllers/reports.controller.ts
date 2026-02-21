@@ -49,6 +49,10 @@ interface TransaccionesQuery {
   sortDir?: 'asc' | 'desc';
 }
 
+interface CuotaDiariaQuery {
+  cuota?: string;
+}
+
 // ── Controllers ─────────────────────────────────────────
 
 /**
@@ -677,6 +681,92 @@ export const getTransaccionesReport = async (
     return reply.status(500).send({
       success: false,
       error: 'Error al obtener las transacciones',
+    });
+  }
+};
+
+/**
+ * GET /api/reportes/cuota-diaria - Daily top-up target report
+ */
+export const getCuotaDiariaReport = async (
+  request: FastifyRequest<{ Querystring: CuotaDiariaQuery }>,
+  reply: FastifyReply
+) => {
+  const { cuota } = request.query || {};
+
+  if (!cuota) {
+    return reply.status(400).send({
+      success: false,
+      error: 'El parametro "cuota" es obligatorio.',
+    });
+  }
+
+  const cuotaValue = Number(cuota);
+  if (Number.isNaN(cuotaValue) || cuotaValue < 0) {
+    return reply.status(400).send({
+      success: false,
+      error: 'El parametro "cuota" debe ser numerico y mayor o igual a 0.',
+    });
+  }
+
+  const today = new Date();
+  const start = new Date(today);
+  const end = new Date(today);
+  start.setUTCHours(0, 0, 0, 0);
+  end.setUTCHours(23, 59, 59, 999);
+
+  try {
+    const collection = mongoose.connection.collection('transactions');
+
+    const [result] = await collection.aggregate([
+      {
+        $addFields: {
+          createdAtDate: {
+            $convert: {
+              input: '$createdAt',
+              to: 'date',
+              onError: null,
+              onNull: null,
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          type: 'recarga',
+          createdAtDate: { $gte: start, $lte: end },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          recargaTotal: { $sum: '$amount' },
+          cantidadRecargas: { $sum: 1 },
+        },
+      },
+    ]).toArray();
+
+    const recargaTotal = result?.recargaTotal || 0;
+    const cantidadRecargas = result?.cantidadRecargas || 0;
+    const brecha = cuotaValue - recargaTotal;
+    const porcentajeAlcanzado = cuotaValue > 0
+      ? ((recargaTotal / cuotaValue) * 100).toFixed(2)
+      : '0.00';
+    const fecha = start.toISOString().slice(0, 10);
+
+    return reply.status(200).send({
+      fecha,
+      cuota_establecida: cuotaValue,
+      recarga_total_hoy: recargaTotal,
+      brecha,
+      porcentaje_alcanzado: porcentajeAlcanzado,
+      cantidad_recargas_hoy: cantidadRecargas,
+    });
+  } catch (error) {
+    console.error('Error en getCuotaDiariaReport:', error);
+    return reply.status(500).send({
+      success: false,
+      error: 'Error al obtener la cuota diaria',
     });
   }
 };

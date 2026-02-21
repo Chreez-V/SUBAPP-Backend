@@ -9,6 +9,7 @@ import {
   getReportReasons,
   getMovimientoTotalReport,
   getTransaccionesReport,
+  getCuotaDiariaReport,
 } from '../controllers/reports.controller.js';
 
 export async function reportsRoutes(fastify: FastifyInstance) {
@@ -85,6 +86,22 @@ export async function reportsRoutes(fastify: FastifyInstance) {
       },
     },
   }, getTransaccionesReport);
+
+  // GET - Daily top-up target
+  fastify.get('/reportes/cuota-diaria', {
+    schema: {
+      description: 'Retorna el avance de la cuota diaria de recargas.',
+      summary: 'Reporte de cuota diaria',
+      tags: ['Reportes'],
+      querystring: {
+        type: 'object',
+        required: ['cuota'],
+        properties: {
+          cuota: { type: 'string', description: 'Cuota diaria establecida' },
+        },
+      },
+    },
+  }, getCuotaDiariaReport);
 
   // GET - List all reports
   fastify.get('/reportes', {
