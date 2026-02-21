@@ -30,6 +30,25 @@ interface MovimientoTotalQuery {
   hasta?: string;
 }
 
+interface TransaccionesQuery {
+  desde?: string;
+  hasta?: string;
+  type?: string;
+  userId?: string;
+  routeId?: string;
+  driverId?: string;
+  tripId?: string;
+  fareType?: string;
+  minAmount?: string;
+  maxAmount?: string;
+  cardUid?: string;
+  description?: string;
+  page?: string;
+  limit?: string;
+  sortBy?: 'createdAt' | 'amount' | 'type';
+  sortDir?: 'asc' | 'desc';
+}
+
 // ── Controllers ─────────────────────────────────────────
 
 /**
@@ -493,6 +512,171 @@ export const getMovimientoTotalReport = async (
     return reply.status(500).send({
       success: false,
       error: 'Error al obtener el movimiento total',
+    });
+  }
+};
+
+/**
+ * GET /api/reportes/transacciones - List transactions with filters
+ */
+export const getTransaccionesReport = async (
+  request: FastifyRequest<{ Querystring: TransaccionesQuery }>,
+  reply: FastifyReply
+) => {
+  const {
+    desde,
+    hasta,
+    type,
+    userId,
+    routeId,
+    driverId,
+    tripId,
+    fareType,
+    minAmount,
+    maxAmount,
+    cardUid,
+    description,
+    page = '1',
+    limit = '50',
+    sortBy = 'createdAt',
+    sortDir = 'desc',
+  } = request.query || {};
+
+  const pageNumber = Math.max(1, parseInt(page, 10) || 1);
+  const limitNumber = Math.min(200, Math.max(1, parseInt(limit, 10) || 50));
+
+  const idFilters = { userId, routeId, driverId, tripId } as const;
+  for (const [label, value] of Object.entries(idFilters)) {
+    if (value && !mongoose.Types.ObjectId.isValid(value)) {
+      return reply.status(400).send({
+        success: false,
+        error: `El parametro "${label}" no es un ObjectId valido.`,
+      });
+    }
+  }
+
+  const minAmountValue = minAmount !== undefined ? Number(minAmount) : undefined;
+  const maxAmountValue = maxAmount !== undefined ? Number(maxAmount) : undefined;
+
+  if (minAmountValue !== undefined && Number.isNaN(minAmountValue)) {
+    return reply.status(400).send({
+      success: false,
+      error: 'El parametro "minAmount" debe ser numerico.',
+    });
+  }
+
+  if (maxAmountValue !== undefined && Number.isNaN(maxAmountValue)) {
+    return reply.status(400).send({
+      success: false,
+      error: 'El parametro "maxAmount" debe ser numerico.',
+    });
+  }
+
+  let start: Date | undefined;
+  let end: Date | undefined;
+
+  if (desde) {
+    start = new Date(desde);
+    if (Number.isNaN(start.getTime())) {
+      return reply.status(400).send({
+        success: false,
+        error: 'Formato de fecha invalido para "desde". Use YYYY-MM-DD.',
+      });
+    }
+    start.setUTCHours(0, 0, 0, 0);
+  }
+
+  if (hasta) {
+    end = new Date(hasta);
+    if (Number.isNaN(end.getTime())) {
+      return reply.status(400).send({
+        success: false,
+        error: 'Formato de fecha invalido para "hasta". Use YYYY-MM-DD.',
+      });
+    }
+    end.setUTCHours(23, 59, 59, 999);
+  }
+
+  const amountFilter: Record<string, number> = {};
+  if (minAmountValue !== undefined) amountFilter.$gte = minAmountValue;
+  if (maxAmountValue !== undefined) amountFilter.$lte = maxAmountValue;
+
+  const match: Record<string, unknown> = {};
+  if (type) match.type = type;
+  if (userId) match.userId = new mongoose.Types.ObjectId(userId);
+  if (routeId) match.routeId = new mongoose.Types.ObjectId(routeId);
+  if (driverId) match.driverId = new mongoose.Types.ObjectId(driverId);
+  if (tripId) match.tripId = new mongoose.Types.ObjectId(tripId);
+  if (fareType) match.fareType = fareType;
+  if (cardUid) match.cardUid = cardUid;
+  if (description) match.description = { $regex: description, $options: 'i' };
+  if (Object.keys(amountFilter).length > 0) match.amount = amountFilter;
+
+  if (start || end) {
+    const dateFilter: Record<string, Date> = {};
+    if (start) dateFilter.$gte = start;
+    if (end) dateFilter.$lte = end;
+    match.createdAtDate = dateFilter;
+  }
+
+  const sortFields: Record<string, string> = {
+    createdAt: 'createdAtDate',
+    amount: 'amount',
+    type: 'type',
+  };
+
+  const sortField = sortFields[sortBy] || sortFields.createdAt;
+  const sortDirection = sortDir === 'asc' ? 1 : -1;
+
+  try {
+    const collection = mongoose.connection.collection('transactions');
+
+    const [result] = await collection.aggregate([
+      {
+        $addFields: {
+          createdAtDate: {
+            $convert: {
+              input: '$createdAt',
+              to: 'date',
+              onError: null,
+              onNull: null,
+            },
+          },
+        },
+      },
+      { $match: match },
+      {
+        $sort: {
+          [sortField]: sortDirection,
+        },
+      },
+      {
+        $facet: {
+          data: [
+            { $skip: (pageNumber - 1) * limitNumber },
+            { $limit: limitNumber },
+            { $project: { createdAtDate: 0 } },
+          ],
+          total: [{ $count: 'count' }],
+        },
+      },
+    ]).toArray();
+
+    const data = (result?.data || []) as Record<string, unknown>[];
+    const totalCount = (result?.total?.[0]?.count || 0) as number;
+
+    return reply.status(200).send({
+      success: true,
+      count: totalCount,
+      page: pageNumber,
+      limit: limitNumber,
+      data,
+    });
+  } catch (error) {
+    console.error('Error en getTransaccionesReport:', error);
+    return reply.status(500).send({
+      success: false,
+      error: 'Error al obtener las transacciones',
     });
   }
 };
