@@ -29,6 +29,10 @@ interface DriverParams {
   driverId: string;
 }
 
+interface RouteParams {
+  routeId: string;
+}
+
 interface MovimientoTotalQuery {
   desde?: string;
   hasta?: string;
@@ -915,6 +919,93 @@ export const getCobrosPorConductor = async (
     return reply.status(500).send({
       success: false,
       error: 'Error al obtener los cobros por conductor',
+    });
+  }
+};
+
+/**
+ * GET /api/reportes/porruta/:routeId - Accumulated charges by route
+ */
+export const getRecaudoPorRuta = async (
+  request: FastifyRequest<{ Params: RouteParams }>,
+  reply: FastifyReply
+) => {
+  const { routeId } = request.params;
+
+  if (!mongoose.Types.ObjectId.isValid(routeId)) {
+    return reply.status(400).send({
+      success: false,
+      error: 'El parametro "routeId" no es un ObjectId valido.',
+    });
+  }
+
+  const match: Record<string, unknown> = {
+    routeId: new mongoose.Types.ObjectId(routeId),
+    type: { $in: ['pago_pasaje_nfc', 'pago_pasaje_qr'] },
+  };
+
+  try {
+    const collection = mongoose.connection.collection('transactions');
+    const [result] = await collection.aggregate([
+      { $match: match },
+      {
+        $facet: {
+          byType: [
+            {
+              $group: {
+                _id: '$type',
+                total: { $sum: '$amount' },
+                count: { $sum: 1 },
+              },
+            },
+          ],
+          totals: [
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: '$amount' },
+                totalCount: { $sum: 1 },
+              },
+            },
+          ],
+        },
+      },
+    ]).toArray();
+
+    const byType = (result?.byType || []) as Array<{
+      _id: string;
+      total: number;
+      count: number;
+    }>;
+
+    const totals = (result?.totals?.[0] || {
+      totalAmount: 0,
+      totalCount: 0,
+    }) as {
+      totalAmount: number;
+      totalCount: number;
+    };
+
+    const porTipo = byType.reduce<Record<string, number>>((acc, item) => {
+      acc[item._id] = item.total || 0;
+      return acc;
+    }, {
+      pago_pasaje_nfc: 0,
+      pago_pasaje_qr: 0,
+    });
+
+    return reply.status(200).send({
+      success: true,
+      routeId,
+      total_recaudado: totals.totalAmount || 0,
+      cantidad_transacciones: totals.totalCount || 0,
+      por_tipo: porTipo,
+    });
+  } catch (error) {
+    console.error('Error en getRecaudoPorRuta:', error);
+    return reply.status(500).send({
+      success: false,
+      error: 'Error al obtener el recaudo por ruta',
     });
   }
 };

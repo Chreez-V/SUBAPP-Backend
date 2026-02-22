@@ -11,6 +11,7 @@ import {
   getTransaccionesReport,
   getCuotaDiariaReport,
   getCobrosPorConductor,
+  getRecaudoPorRuta,
 } from '../controllers/reports.controller.js';
 
 export async function reportsRoutes(fastify: FastifyInstance) {
@@ -126,6 +127,22 @@ export async function reportsRoutes(fastify: FastifyInstance) {
       },
     },
   }, getCobrosPorConductor);
+
+  // GET - Accumulated charges by route
+  fastify.get('/reportes/porruta/:routeId', {
+    schema: {
+      description: 'Retorna el recaudo acumulado por ruta para pagos NFC y QR.',
+      summary: 'Recaudo por ruta',
+      tags: ['Reportes'],
+      params: {
+        type: 'object',
+        properties: {
+          routeId: { type: 'string', description: 'ID de la ruta' },
+        },
+        required: ['routeId'],
+      },
+    },
+  }, getRecaudoPorRuta);
 
   // GET - List all reports
   fastify.get('/reportes', {
