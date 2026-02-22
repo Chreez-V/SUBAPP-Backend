@@ -29,6 +29,16 @@ export const transferirSchema = z.object({
   }),
 })
 
+export const rejectPaymentSchema = z.object({
+  body: z.object({
+    rejectionReason: z
+      .string()
+      .min(5, 'El motivo de rechazo debe tener al menos 5 caracteres')
+      .max(255, 'El motivo es demasiado largo'),
+  }),
+})
+
 // Exportamos los tipos inferidos para usarlos en los controladores y tener autocompletado
 export type RecargarBody = z.infer<typeof recargarSchema>['body']
 export type TransferirBody = z.infer<typeof transferirSchema>['body']
+export type RejectBody = z.infer<typeof rejectPaymentSchema>['body']

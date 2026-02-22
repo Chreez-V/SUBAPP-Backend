@@ -66,4 +66,6 @@ export async function routes(fastify: FastifyInstance) {
   await fastify.register(supportRoutes, { prefix: '/api' })
 
   await fastify.register(walletRoutes, { prefix: '/wallet' })
+
+  await fastify.register(walletRoutes, { prefix: 'api/billetera' })
 }
