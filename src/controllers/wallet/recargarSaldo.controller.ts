@@ -2,7 +2,6 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { User } from '@/models/user'
 import { PaymentValidation } from '@/models/paymentValidation'
 import { recargarSchema } from '@/validators/wallet.schema'
-import fastify from 'fastify'
 
 export async function recargarSaldo(
   request: FastifyRequest,

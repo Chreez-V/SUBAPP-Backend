@@ -18,7 +18,7 @@ export async function walletRoutes(fastify: FastifyInstance) {
   // Endpoint: GET /api/wallet/saldo
   fastify.get('/saldo', getSaldo)
 
-  // Endpoint: GET /api/wallet/recargar (para que los pasajeros puedan recargar saldo, pero no los conductores)
+  // Endpoint: POST /api/wallet/recargar (para que los pasajeros puedan recargar saldo, pero no los conductores)
   fastify.post('/recargar', recargarSaldo)
 
   fastify.get('/validaciones', getPaymentValidationsController)
