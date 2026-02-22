@@ -2,21 +2,23 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { User } from '@/models/user'
 import { PaymentValidation } from '@/models/paymentValidation'
 import { recargarSchema } from '@/validators/wallet.schema'
+import { z } from 'zod'
 
 export async function recargarSaldo(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
   try {
+    console.log('Lo que llega de Insomnia:', request.body)
     // Validamos la entrada usando el esquema de Zod
-    const parsedBody = recargarSchema.safeParse(request.body)
+    const parsedBody = recargarSchema.safeParse({ body: request.body })
 
     if (!parsedBody.success) {
       //Si hay errores de validacion enviamos codigo 400 con el mensaje error
       return reply.status(400).send({
         success: false,
         error: 'Error de validación', // enviamos el error de validación
-        details: parsedBody.error.flatten(), // Detalles específicos de los errores de validación
+        details: z.treeifyError(parsedBody.error), // Detalles específicos de los errores de validación
       })
     }
 
@@ -43,9 +45,10 @@ export async function recargarSaldo(
       })
     }
 
+    //DESCOMENTAR AL FINALIZAR EL DESARROLLO DE PERFIL PARA VALIDAR QUE EL USUARIO TENGA SUS DATOS COMPLETOS ANTES DE PERMITIRLE RECARGAR SALDO
     //validamos que el usuario tenga sus datos completos para realizar la recarga, como CI, Fecha de nacimiento y Telefono
 
-    if (!user.cedula || !user.birthDate || !user.phone) {
+    /*if (!user.cedula || !user.birthDate || !user.phone) {
       return reply.status(400).send({
         code: 'PROFILE_INCOMPLETE',
         success: false,
@@ -57,7 +60,7 @@ export async function recargarSaldo(
         error:
           'Perfil incompleto, por favor complete su perfil para recargar saldo',
       })
-    }
+    }*/
 
     //Verificamos que la referencia de pago no haya sido utilizada antes para evitar recargas duplicadas
 
@@ -79,7 +82,7 @@ export async function recargarSaldo(
       banco,
       fechaPago,
       comprobantUrl: comprobanteUrl,
-      status: 'pending', // El estado inicial es 'pending' hasta que un admin lo revise y apruebe o rechace
+      status: 'pendiente', // El estado inicial es 'pendiente' hasta que un admin lo revise y apruebe o rechace
     })
 
     await newPayment.save()
