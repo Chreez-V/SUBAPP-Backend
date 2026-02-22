@@ -2,9 +2,9 @@ import { Schema, model, Document } from 'mongoose'
 import bcrypt from 'bcryptjs'
 
 export interface IDriverPaymentMethod {
-  type: 'pago_movil' | 'transferencia' | 'binance'
+  type?: 'pago_movil' | 'transferencia' | 'binance'
   banco?: string       // Banco asociado (ej: 'Banesco', 'Mercantil')
-  cedula: string       // Cédula vinculada al método de pago
+  cedula?: string      // Cédula vinculada al método de pago
   phone?: string       // Teléfono vinculado (para pago móvil)
   cuenta?: string      // Número de cuenta (para transferencia)
   tag?: string         // Tag o ID (para Binance u otros)
@@ -22,9 +22,7 @@ export interface IDriver extends Document {
   status: 'Active' | 'Inactive'
   profilePictureUrl?: string
   credit: number        // Saldo acumulado por cobros recibidos
-  // ✅ MÉTODO DE PAGO — Obligatorio al crear desde Admin Panel
-  // Se muestra al pasajero cuando el conductor activa cobro por NFC o QR
-  // Se usa para procesar retiros de saldo del conductor
+  // ✅ MÉTODO DE PAGO — Opcional para la billetera virtual
   paymentMethod?: IDriverPaymentMethod
   resetPasswordToken?: string // Token for password reset
   resetPasswordExpires?: Date
@@ -61,15 +59,15 @@ const DriverSchema = new Schema<IDriver>(
     profilePictureUrl: { type: String, default: null },
     credit: { type: Number, default: 0 },
 
-    // ✅ MÉTODO DE PAGO — Requerido para activar cobro por NFC/QR
+    // ✅ MÉTODO DE PAGO — Reglas relajadas (required: false)
     paymentMethod: {
       type: {
         type: String,
         enum: ['pago_movil', 'transferencia', 'binance'],
-        required: true,
+        required: false,
       },
       banco: { type: String, trim: true },
-      cedula: { type: String, required: true, trim: true },
+      cedula: { type: String, required: false, trim: true },
       phone: { type: String, trim: true },
       cuenta: { type: String, trim: true },
       tag: { type: String, trim: true },
