@@ -57,3 +57,6 @@ export const PaymentValidation = model<IPaymentValidation>(
   'PaymentValidation',
   PaymentValidationSchema
 )
+
+export const getPaymentValidations = async (filter: any = {}) => PaymentValidation.find(filter).lean()
+export const getPaymentValidationById = async (id: string) => PaymentValidation.findById(id).lean()
