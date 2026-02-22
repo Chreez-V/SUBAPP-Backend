@@ -19,6 +19,7 @@ import { adminRoutes } from "./admin/index.js";
 import { currentUserRoute } from "./auth/me.js";
 import supportRoutes from "./support/index.js";
 import { profileRoutes } from "./auth/profile.routes.js";
+import { abordajeRoutes } from './abordaje/abordaje.routes';
 
 export async function routes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);
@@ -63,4 +64,8 @@ export async function routes(fastify: FastifyInstance) {
 
   // Support routes
   await fastify.register(supportRoutes, { prefix: '/api' });
+
+
+  // Abordaje routes (pago con NFC, QR, historial, etc.)
+  fastify.register(abordajeRoutes, { prefix: '/api/abordaje' });
 }
