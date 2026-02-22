@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { getSaldo } from '../../controllers/wallet/getSaldo.controller.js'
+import { recargarSaldo } from '../../controllers/wallet/recargarSaldo.controller.js'
 import { createJwtMiddleware } from '../../middlewares/authMiddleware.js'
 import { getPaymentValidationsController } from '../../controllers/wallet/getValidations.controller.js'
 import { getPaymentValidationController } from '../../controllers/wallet/getValidation.controller.js'
@@ -16,6 +17,9 @@ export async function walletRoutes(fastify: FastifyInstance) {
 
   // Endpoint: GET /api/wallet/saldo
   fastify.get('/saldo', getSaldo)
+
+  // Endpoint: GET /api/wallet/recargar (para que los pasajeros puedan recargar saldo, pero no los conductores)
+  fastify.post('/recargar', recargarSaldo)
 
   fastify.get('/validaciones', getPaymentValidationsController)
   fastify.get('/validaciones/:id', getPaymentValidationController)
