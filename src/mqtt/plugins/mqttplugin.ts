@@ -8,17 +8,32 @@ interface driver {
     latitude: number,
     longitude: number,
   },
+  last_update: number
 }
+
 
 export async function startMqtt() {
   let driverHashMap: Map<string, driver> = new Map();
 
   mqttClient.connect();
 
+  const cleanupInactiveDrivers = () => {
+    const now = Date.now();
+    const threshold = 20 * 1000; // 20 seconds in milliseconds
+
+    for (const [id, data] of driverHashMap.entries()) {
+      if (now - data.last_update > threshold) {
+        driverHashMap.delete(id);
+        console.log(`Driver ${data.number_plate} removed due to inactivity.`);
+      }
+    }
+  };
+
   mqttClient.subscribe("subapp/driver", (topic, payload) => {
     const rawPayload = payload.toString("utf-8")
     const data: driver = JSON.parse(rawPayload);
 
+    data.last_update = Date.now();
     console.log("received driver data:", topic, data);
 
     if (data.status === "inactive") {
@@ -35,6 +50,7 @@ export async function startMqtt() {
   });
   const intervalId = setInterval(() => {
     if (driverHashMap.size != 0) {
+      cleanupInactiveDrivers()
       try {
         const payload = JSON.stringify([...driverHashMap.values()]);
         console.log("sending payload: \n", payload)
