@@ -7,7 +7,6 @@ import { approveRechargeController } from '../../controllers/wallet/approveRecha
 import { rejectRechargeController } from '../../controllers/wallet/rejectRecharge.controller.js'
 import { rejectPaymentSchema } from '../../validators/wallet.schema.js'
 
-
 export async function walletRoutes(fastify: FastifyInstance) {
   // 1. Creamos el middleware
   const authenticate = createJwtMiddleware(fastify)
@@ -17,12 +16,13 @@ export async function walletRoutes(fastify: FastifyInstance) {
 
   // Endpoint: GET /api/wallet/saldo
   fastify.get('/saldo', getSaldo)
-<<<<<<< HEAD
-  
-=======
+
   fastify.get('/validaciones', getPaymentValidationsController)
   fastify.get('/validaciones/:id', getPaymentValidationController)
   fastify.put('/validaciones/:id/aprobar', approveRechargeController)
-  fastify.put('/validaciones/:id/rechazar', { schema: rejectPaymentSchema }, rejectRechargeController)
->>>>>>> a98eb692a6ee6512e937c9b9dcca861aca6d1a59
+  fastify.put(
+    '/validaciones/:id/rechazar',
+    { schema: rejectPaymentSchema },
+    rejectRechargeController,
+  )
 }
