@@ -11,4 +11,5 @@ export async function walletRoutes(fastify: FastifyInstance) {
 
   // Endpoint: GET /api/wallet/saldo
   fastify.get('/saldo', getSaldo)
+  
 }
