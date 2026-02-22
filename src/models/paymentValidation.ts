@@ -1,8 +1,8 @@
 import { Schema, model, Document, Types } from 'mongoose'
 
 export interface IPaymentValidation extends Document {
-  userId: Types.ObjectId // Ref User que solicita la recarga
-  type: 'recarga' | 'pago_tarjeta_nfc' // Tipo de validación
+  userId: Types.ObjectId // Ref User que solicita la recarga/retiro
+  type: 'recarga' | 'pago_tarjeta_nfc' | 'retiro' // Tipo de validación
   
   // Datos del pago externo
   referenciaPago: string // Número de referencia del pago (pago móvil/transferencia)
@@ -29,7 +29,7 @@ export interface IPaymentValidation extends Document {
 const PaymentValidationSchema = new Schema<IPaymentValidation>(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    type: { type: String, enum: ['recarga', 'pago_tarjeta_nfc'], required: true },
+    type: { type: String, enum: ['recarga', 'pago_tarjeta_nfc', 'retiro'], required: true },
     referenciaPago: { type: String, required: true, trim: true },
     monto: { type: Number, required: true, min: 0 },
     banco: { type: String, trim: true },

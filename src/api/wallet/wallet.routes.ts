@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { getSaldo } from '../../controllers/wallet/getSaldo.controller.js'
+import { withdraw } from '../../controllers/wallet/withdraw.controller.js'
 import { createJwtMiddleware } from '../../middlewares/authMiddleware.js'
 
 export async function walletRoutes(fastify: FastifyInstance) {
@@ -11,4 +12,6 @@ export async function walletRoutes(fastify: FastifyInstance) {
 
   // Endpoint: GET /api/wallet/saldo
   fastify.get('/saldo', getSaldo)
+  // Endpoint: POST /api/billetera/retirar 
+  fastify.post('/retirar', withdraw)
 }
