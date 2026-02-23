@@ -45,10 +45,9 @@ export async function recargarSaldo(
       })
     }
 
-    //DESCOMENTAR AL FINALIZAR EL DESARROLLO DE PERFIL PARA VALIDAR QUE EL USUARIO TENGA SUS DATOS COMPLETOS ANTES DE PERMITIRLE RECARGAR SALDO
     //validamos que el usuario tenga sus datos completos para realizar la recarga, como CI, Fecha de nacimiento y Telefono
 
-    /*if (!user.cedula || !user.birthDate || !user.phone) {
+    if (!user.cedula || !user.birthDate || !user.phone) {
       return reply.status(400).send({
         code: 'PROFILE_INCOMPLETE',
         success: false,
@@ -60,7 +59,7 @@ export async function recargarSaldo(
         error:
           'Perfil incompleto, por favor complete su perfil para recargar saldo',
       })
-    }*/
+    }
 
     //Verificamos que la referencia de pago no haya sido utilizada antes para evitar recargas duplicadas
 
