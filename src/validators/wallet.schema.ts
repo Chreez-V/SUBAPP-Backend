@@ -23,6 +23,7 @@ export const transferirSchema = z.object({
     destinatarioEmail: z.email(
       'Debe proporcionar un correo electrónico válido',
     ), //z.email() para validar formato de email
+    destinatarioId: z.string().min(5).optional(), //El destinatario puede ser identificado por email o por ID, pero no es obligatorio proporcionar ambos
     monto: z
       .number()
       .positive('El monto a transferir debe ser un número positivo mayor a 0'), //Valida que el monto no sea un numero negativo o cero

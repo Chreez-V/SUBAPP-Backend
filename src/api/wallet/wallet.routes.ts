@@ -7,6 +7,7 @@ import { getPaymentValidationController } from '../../controllers/wallet/getVali
 import { approveRechargeController } from '../../controllers/wallet/approveRecharge.controller.js'
 import { rejectRechargeController } from '../../controllers/wallet/rejectRecharge.controller.js'
 import { rejectPaymentSchema } from '../../validators/wallet.schema.js'
+import { transferirSaldo } from '../../controllers/wallet/transferirSaldo.js'
 
 export async function walletRoutes(fastify: FastifyInstance) {
   // 1. Creamos el middleware
@@ -20,6 +21,9 @@ export async function walletRoutes(fastify: FastifyInstance) {
 
   // Endpoint: POST /api/wallet/recargar (para que los pasajeros puedan recargar saldo, pero no los conductores)
   fastify.post('/recargar', recargarSaldo)
+
+  // Endpoint: POST /api/wallet/transferir (para que los pasajeros puedan transferir saldo a otros usuarios, pero no los conductores)
+  fastify.post('/transferir', transferirSaldo)
 
   fastify.get('/validaciones', getPaymentValidationsController)
   fastify.get('/validaciones/:id', getPaymentValidationController)
