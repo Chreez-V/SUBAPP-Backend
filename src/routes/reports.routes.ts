@@ -1,4 +1,6 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, RouteShorthandOptions } from 'fastify';
+import isAuth from '../middlewares/isAuth.js';
+import { requireAdmin } from '../middlewares/requireAdmin.js';
 import {
   getAllReports,
   getPendingReports,
@@ -13,6 +15,11 @@ import {
   getCobrosPorConductor,
   getRecaudoPorRuta,
 } from '../controllers/reports.controller.js';
+
+interface MovimientoTotalQuery {
+  desde: string;
+  hasta: string;
+}
 
 export async function reportsRoutes(fastify: FastifyInstance) {
   // GET - List of valid report reasons (enum)
@@ -43,7 +50,7 @@ export async function reportsRoutes(fastify: FastifyInstance) {
   }, getReportReasons);
 
   // GET - Total movement report by period
-  fastify.get('/reportes/movimiento-total', {
+  const movimientoTotalOpts: RouteShorthandOptions = {
     schema: {
       description: 'Retorna el resumen de ingresos y egresos por tipo de transaccion en un periodo.',
       summary: 'Resumen de movimiento total',
@@ -57,10 +64,36 @@ export async function reportsRoutes(fastify: FastifyInstance) {
         },
       },
     },
-  }, getMovimientoTotalReport);
+    preHandler: [isAuth, requireAdmin],
+  };
+
+  fastify.get<{
+    Querystring: MovimientoTotalQuery
+  }>('/reportes/movimiento-total', movimientoTotalOpts, getMovimientoTotalReport);
 
   // GET - List transactions with filters
-  fastify.get('/reportes/transacciones', {
+  interface TransaccionesQuery {
+    desde?: string;
+    hasta?: string;
+    type?: string;
+    userId?: string;
+    routeId?: string;
+    driverId?: string;
+    tripId?: string;
+    fareType?: string;
+    minAmount?: string;
+    maxAmount?: string;
+    cardUid?: string;
+    description?: string;
+    page?: string;
+    limit?: string;
+    sortBy?: 'createdAt' | 'amount' | 'type';
+    sortDir?: 'asc' | 'desc';
+  }
+
+  fastify.get<{
+    Querystring: TransaccionesQuery
+  }>('/reportes/transacciones', {
     schema: {
       description: 'Lista todas las transacciones con filtros opcionales.',
       summary: 'Listar transacciones con filtros',
@@ -87,10 +120,17 @@ export async function reportsRoutes(fastify: FastifyInstance) {
         },
       },
     },
+    preHandler: [isAuth, requireAdmin],
   }, getTransaccionesReport);
 
   // GET - Daily top-up target
-  fastify.get('/reportes/cuota-diaria', {
+  interface CuotaDiariaQuery {
+    cuota: string;
+  }
+
+  fastify.get<{
+    Querystring: CuotaDiariaQuery
+  }>('/reportes/cuota-diaria', {
     schema: {
       description: 'Retorna el avance de la cuota diaria de recargas.',
       summary: 'Reporte de cuota diaria',
@@ -103,10 +143,21 @@ export async function reportsRoutes(fastify: FastifyInstance) {
         },
       },
     },
+    preHandler: [isAuth, requireAdmin],
   }, getCuotaDiariaReport);
 
   // GET - Accumulated charges by driver
-  fastify.get('/reportes/porconductor/:driverId', {
+  interface DriverParams {
+    driverId: string;
+  }
+  interface CobrosPorConductorQuery {
+    desde?: string;
+    hasta?: string;
+  }
+  fastify.get<{
+    Params: DriverParams;
+    Querystring: CobrosPorConductorQuery;
+  }>('/reportes/porconductor/:driverId', {
     schema: {
       description: 'Retorna los cobros acumulados por conductor para pagos NFC y QR.',
       summary: 'Cobros acumulados por conductor',
@@ -126,10 +177,16 @@ export async function reportsRoutes(fastify: FastifyInstance) {
         required: ['driverId'],
       },
     },
+    preHandler: [isAuth, requireAdmin],
   }, getCobrosPorConductor);
 
   // GET - Accumulated charges by route
-  fastify.get('/reportes/porruta/:routeId', {
+  interface RouteParams {
+    routeId: string;
+  }
+  fastify.get<{
+    Params: RouteParams;
+  }>('/reportes/porruta/:routeId', {
     schema: {
       description: 'Retorna el recaudo acumulado por ruta para pagos NFC y QR.',
       summary: 'Recaudo por ruta',
@@ -142,6 +199,7 @@ export async function reportsRoutes(fastify: FastifyInstance) {
         required: ['routeId'],
       },
     },
+    preHandler: [isAuth, requireAdmin],
   }, getRecaudoPorRuta);
 
   // GET - List all reports
