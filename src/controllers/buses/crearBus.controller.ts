@@ -1,7 +1,8 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { createBus, getBusByPlaca } from '../../models/bus.js'
+import { createBus, getBusByPlate } from '../../models/bus.js'
 import { createBusSchema } from '../../validators/bus.schema.js'
 import { z } from 'zod'
+import { Types } from 'mongoose'
 
 export async function crearBus(request: FastifyRequest, reply: FastifyReply) {
   try {
@@ -15,8 +16,21 @@ export async function crearBus(request: FastifyRequest, reply: FastifyReply) {
       })
     }
 
+    const payload = {
+      plate: parsed.data.placa,
+      brand: parsed.data.marca,
+      vehicleModel: parsed.data.modelo,
+      year: parsed.data.anio,
+      capacity: parsed.data.capacidad,
+      status: parsed.data.status,
+      assignedRouteId: parsed.data.assignedRouteId ? new Types.ObjectId(parsed.data.assignedRouteId) : undefined,
+      assignedDriverId: parsed.data.assignedDriverId ? new Types.ObjectId(parsed.data.assignedDriverId) : undefined,
+      color: parsed.data.color,
+      fleetNumber: parsed.data.numeroInterno,
+    }
+
     // Verificar placa duplicada
-    const existing = await getBusByPlaca(parsed.data.placa)
+    const existing = await getBusByPlate(payload.plate)
     if (existing) {
       return reply.status(409).send({
         success: false,
@@ -24,12 +38,29 @@ export async function crearBus(request: FastifyRequest, reply: FastifyReply) {
       })
     }
 
-    const bus = await createBus(parsed.data as any)
+    const bus = await createBus(payload)
+
+    const responseBus = {
+      ...bus.toObject(),
+      placa: bus.plate,
+      marca: bus.brand,
+      modelo: bus.vehicleModel,
+      anio: bus.year,
+      capacidad: bus.capacity,
+      numeroInterno: bus.fleetNumber,
+    }
+
+    delete (responseBus as any).plate
+    delete (responseBus as any).brand
+    delete (responseBus as any).vehicleModel
+    delete (responseBus as any).year
+    delete (responseBus as any).capacity
+    delete (responseBus as any).fleetNumber
 
     return reply.status(201).send({
       success: true,
       message: 'Autobús registrado exitosamente',
-      data: bus,
+      data: responseBus,
     })
   } catch (error: any) {
     if (error.code === 11000) {

@@ -1,8 +1,8 @@
 import { Types } from "mongoose";
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
-import { createDiscountSchema, findAllDiscountsSchema, updateDiscountSchema } from "@/validators/discount.schema";
-import { DiscountService } from "@/services/discount.service";
+import { createDiscountSchema, findAllDiscountsSchema, updateDiscountSchema } from "../../validators/discount.schema.js";
+import { DiscountService } from "../../services/discount.service.js";
 
 const discountService = new DiscountService()
 
