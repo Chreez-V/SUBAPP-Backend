@@ -19,48 +19,68 @@ import { adminRoutes } from "./admin/index.js";
 import { currentUserRoute } from "./auth/me.js";
 import supportRoutes from "./support/index.js";
 import { profileRoutes } from "./auth/profile.routes.js";
+import {collectorRoutes} from "./busCollector/busCollector.routes.js"
+import { abordajeRoutes } from './abordaje/abordaje.routes.js';
+import { discountRoutes } from "./discount.routes.js";
+import { nfcRoutes } from './nfc/nfc.routes.js';
+import { walletRoutes } from './wallet/wallet.routes.js'
+import { busRoutes } from './buses/buses.routes.js'
 
 export async function routes(fastify: FastifyInstance) {
-  await fastify.register(healthRoutes);
-  await fastify.register(databaseRoutes);
+  await fastify.register(healthRoutes)
+  await fastify.register(databaseRoutes)
 
   // Auth module routes
-  await fastify.register(LoginRoutes, { prefix: '/auth' });
-  await fastify.register(logoutRoute, { prefix: '/auth' });
-  await fastify.register(register, { prefix: '/auth' });
-  await fastify.register(changePasswordRoutes, { prefix: '/auth' });
-  await fastify.register(usersRoutes, { prefix: '/auth' });
-  await fastify.register(googleAuthRoutes, { prefix: '/auth' });
-  await fastify.register(currentUserRoute, { prefix: '/auth' });
-  await fastify.register(profileRoutes, { prefix: '/auth' });
+  await fastify.register(LoginRoutes, { prefix: '/auth' })
+  await fastify.register(logoutRoute, { prefix: '/auth' })
+  await fastify.register(register, { prefix: '/auth' })
+  await fastify.register(changePasswordRoutes, { prefix: '/auth' })
+  await fastify.register(usersRoutes, { prefix: '/auth' })
+  await fastify.register(googleAuthRoutes, { prefix: '/auth' })
+  await fastify.register(currentUserRoute, { prefix: '/auth' })
+  await fastify.register(profileRoutes, { prefix: '/auth' })
 
   // Admin module routes
   await fastify.register(adminRoutes, { prefix: '/api/admin' });
-  
+
   // Passengers routes
-  await fastify.register(passengersRoutes, { prefix: '/api' });
+  await fastify.register(passengersRoutes, { prefix: '/api' })
 
   // Routes management
-  await fastify.register(routesRoutes, { prefix: '/api' });
+  await fastify.register(routesRoutes, { prefix: '/api' })
 
   // Stops management
-  await fastify.register(stopsRoutes, { prefix: '/api' });
+  await fastify.register(stopsRoutes, { prefix: '/api' })
 
   // Route Sets (conjuntos) management
-  await fastify.register(routeSetsRoutes, { prefix: '/api' });
+  await fastify.register(routeSetsRoutes, { prefix: '/api' })
 
   // Reports management
-  await fastify.register(reportsRoutes, { prefix: '/api' });
+  await fastify.register(reportsRoutes, { prefix: '/api' })
 
   // Pasaje routes
   await fastify.register(busFareRoutes, { prefix: '/api/pasajes' });
-  
+
   // Conductores routes
-  await fastify.register(driversRoutes, { prefix: '/api/conductores' });
+  await fastify.register(driversRoutes, { prefix: '/api/conductores' })
+
+  //Colectores routes
+  await fastify.register(collectorRoutes, {prefix: '/api/colectores'})
 
   // Viajes routes
-  await fastify.register(tripRoutes, { prefix: '/api/viajes' });
+  await fastify.register(tripRoutes, { prefix: '/api/viajes' })
 
   // Support routes
   await fastify.register(supportRoutes, { prefix: '/api' });
+  await fastify.register(discountRoutes, { prefix: '/api/descuentos' });
+
+  // Abordaje routes (pago con NFC, QR, historial, etc.)
+  await fastify.register(abordajeRoutes, { prefix: '/api/abordaje' });
+
+    // NFC routes
+  await fastify.register(nfcRoutes, { prefix: '/api/nfc' });
+  await fastify.register(walletRoutes, { prefix: '/api/billetera' })
+
+  // Autobuses routes
+  await fastify.register(busRoutes, { prefix: '/api/autobuses' })
 }

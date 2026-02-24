@@ -17,3 +17,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 .pdf
+
+# Archivos de prueba locales
+discountprofile.ts
+nfccard.ts
+transaction.ts
