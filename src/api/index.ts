@@ -19,6 +19,7 @@ import { adminRoutes } from "./admin/index.js";
 import { currentUserRoute } from "./auth/me.js";
 import supportRoutes from "./support/index.js";
 import { profileRoutes } from "./auth/profile.routes.js";
+import { discountRoutes } from "./discount.routes.js";
 import { nfcRoutes } from './nfc/nfc.routes';
 import { walletRoutes } from './wallet/wallet.routes.js'
 
@@ -37,6 +38,7 @@ export async function routes(fastify: FastifyInstance) {
   await fastify.register(profileRoutes, { prefix: '/auth' })
 
   // Admin module routes
+  await fastify.register(adminRoutes, { prefix: '/api/admin' });
   await fastify.register(adminRoutes, { prefix: '/api/admin' })
 
   // Passengers routes
@@ -55,6 +57,7 @@ export async function routes(fastify: FastifyInstance) {
   await fastify.register(reportsRoutes, { prefix: '/api' })
 
   // Pasaje routes
+  await fastify.register(busFareRoutes, { prefix: '/api/pasajes' });
   await fastify.register(busFareRoutes, { prefix: '/api/pasajes' })
 
   // Conductores routes
@@ -65,6 +68,7 @@ export async function routes(fastify: FastifyInstance) {
 
   // Support routes
   await fastify.register(supportRoutes, { prefix: '/api' });
+  await fastify.register(discountRoutes, { prefix: '/api/discounts' });
 
     // NFC routes
   await fastify.register(nfcRoutes, { prefix: '/api/nfc' });
