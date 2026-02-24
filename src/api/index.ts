@@ -67,11 +67,10 @@ export async function routes(fastify: FastifyInstance) {
 
   // Support routes
   await fastify.register(supportRoutes, { prefix: '/api' });
-
+  await fastify.register(discountRoutes, { prefix: '/api/discounts' });
 
   // Abordaje routes (pago con NFC, QR, historial, etc.)
-  fastify.register(abordajeRoutes, { prefix: '/api/abordaje' });
-  await fastify.register(discountRoutes, { prefix: '/api/discounts' });
+  await fastify.register(abordajeRoutes, { prefix: '/api/abordaje' });
 
     // NFC routes
   await fastify.register(nfcRoutes, { prefix: '/api/nfc' });
