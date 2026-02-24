@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import jwt from 'jsonwebtoken';
-import { Driver } from '../../models/driver';
+import { Driver } from '../../models/driver.js';
 
 interface GenerarQrBody {
   routeId: string;

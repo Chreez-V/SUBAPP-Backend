@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { NfcCardRequest } from '../../models/nfcCardRequest'
-import { NfcCard } from '../../models/nfcCard'
+import { NfcCardRequest } from '../../models/nfcCardRequest.js'
+import { NfcCard } from '../../models/nfcCard.js'
 
 export interface JwtPayload {
     _id: string;

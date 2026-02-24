@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { getPaymentValidations } from '../../models/paymentValidation';
+import { getPaymentValidations } from '../../models/paymentValidation.js';
 
 export async function getPaymentValidationsController(request: FastifyRequest, reply: FastifyReply){
     try{

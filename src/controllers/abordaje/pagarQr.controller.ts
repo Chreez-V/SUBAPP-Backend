@@ -1,11 +1,11 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
-import { User } from '../../models/user';
-import { Driver } from '../../models/driver';
-import { BusFare } from '../../models/busfare';
-import { DiscountProfile } from '../../models/discountProfile';
-import { Transaction } from '../../models/transaction';
+import { User } from '../../models/user.js';
+import { Driver } from '../../models/driver.js';
+import { BusFare } from '../../models/busfare.js';
+import { DiscountProfile } from '../../models/discount-profile.model.js';
+import { Transaction } from '../../models/transaction.js';
 
 // Tipado del body (validado por Zod)
 interface PagarQrBody {

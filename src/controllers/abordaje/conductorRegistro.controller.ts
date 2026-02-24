@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { Transaction } from '../../models/transaction';
+import { Transaction } from '../../models/transaction.js';
 
 export async function conductorRegistroController(request: FastifyRequest, reply: FastifyReply) {
   try {

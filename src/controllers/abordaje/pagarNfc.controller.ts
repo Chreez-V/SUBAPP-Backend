@@ -1,11 +1,11 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import mongoose from 'mongoose';
-import { Driver } from '../../models/driver';
-import { NfcCard } from '../../models/nfcCard';
-import { User } from '../../models/user';
-import { BusFare } from '../../models/busfare';
-import { DiscountProfile } from '../../models/discountProfile';
-import { Transaction } from '../../models/transaction';
+import { Driver } from '../../models/driver.js';
+import { NfcCard } from '../../models/nfcCard.js';
+import { User } from '../../models/user.js';
+import { BusFare } from '../../models/busfare.js';
+import { DiscountProfile } from '../../models/discount-profile.model.js';
+import { Transaction } from '../../models/transaction.js';
 
 interface PagarNfcBody {
   cardUid: string;

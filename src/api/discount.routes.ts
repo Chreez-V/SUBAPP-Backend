@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify';
 import * as z from "zod";
-import isAuth from '@/middlewares/isAuth';
-import { createDiscount, deleteDiscount, getDiscount, getDiscounts, updateDiscount } from '@/controllers/discounts/discount.controller.js';
-import { createDiscountSchema } from '@/validators/discount.schema.js';
-import { requireAdmin } from '@/middlewares/requireAdmin';
+import isAuth from '../middlewares/isAuth.js';
+import { createDiscount, deleteDiscount, getDiscount, getDiscounts, updateDiscount } from '../controllers/discounts/discount.controller.js';
+import { createDiscountSchema } from '../validators/discount.schema.js';
+import { requireAdmin } from '../middlewares/requireAdmin.js';
 
 export async function discountRoutes(fastify: FastifyInstance) {
 	fastify.post('/', {

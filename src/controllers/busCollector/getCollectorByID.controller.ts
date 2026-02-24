@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import * as Collector from '../../models/busCollector';
+import * as Collector from '../../models/busCollector.js';
 
 export const handleGetCollectorById = async (
   request: FastifyRequest<{ Params: { id: string } }>,
