@@ -1,5 +1,5 @@
-import { DiscountProfile, DiscountType, IDiscountProfile, DocumentType, DiscountStatus } from "@/models/discount-profile.model";
-import type { createDiscountSchema, findAllDiscountsSchema, updateDiscountSchema } from "@/validators/discount.schema";
+import { DiscountProfile, DiscountType, IDiscountProfile, DocumentType, DiscountStatus } from "../models/discount-profile.model.js";
+import type { createDiscountSchema, findAllDiscountsSchema, updateDiscountSchema } from "../validators/discount.schema.js";
 import { Types } from "mongoose";
 import { z } from "zod";
 

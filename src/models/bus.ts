@@ -1,46 +1,46 @@
 import { Schema, model, Document, Types } from 'mongoose'
 
 export interface IBus extends Document {
-  placa: string              // Placa del autobús (única)
-  marca: string              // Marca (ej: Mercedes-Benz, Yutong)
-  modelo: string             // Modelo (ej: OF-1721, ZK6116HG)
-  anio: number               // Año de fabricación
-  capacidad: number          // Capacidad de pasajeros
+  plate: string
+  brand: string
+  vehicleModel: string
+  year: number
+  capacity: number
   status: 'Activo' | 'Inactivo' | 'Mantenimiento'
-  assignedRouteId?: Types.ObjectId   // Ref → Route (ruta asignada)
-  assignedDriverId?: Types.ObjectId  // Ref → Driver (conductor asignado)
+  assignedRouteId?: Types.ObjectId
+  assignedDriverId?: Types.ObjectId
   color?: string
-  numeroInterno?: string     // Número interno de la flota
+  fleetNumber?: string
   createdAt: Date
   updatedAt: Date
 }
 
 const BusSchema = new Schema<IBus>(
   {
-    placa: {
+    plate: {
       type: String,
       required: true,
       unique: true,
       uppercase: true,
       trim: true,
     },
-    marca: {
+    brand: {
       type: String,
       required: true,
       trim: true,
     },
-    modelo: {
+    vehicleModel: {
       type: String,
       required: true,
       trim: true,
     },
-    anio: {
+    year: {
       type: Number,
       required: true,
       min: 1990,
       max: new Date().getFullYear() + 1,
     },
-    capacidad: {
+    capacity: {
       type: Number,
       required: true,
       min: 1,
@@ -64,7 +64,7 @@ const BusSchema = new Schema<IBus>(
       type: String,
       trim: true,
     },
-    numeroInterno: {
+    fleetNumber: {
       type: String,
       trim: true,
       sparse: true,
@@ -92,8 +92,8 @@ export const getBusById = async (id: string) => {
     .lean()
 }
 
-export const getBusByPlaca = async (placa: string) => {
-  return Bus.findOne({ placa: placa.toUpperCase() }).lean()
+export const getBusByPlate = async (plate: string) => {
+  return Bus.findOne({ plate: plate.toUpperCase() }).lean()
 }
 
 export const createBus = async (data: Partial<IBus>) => {
