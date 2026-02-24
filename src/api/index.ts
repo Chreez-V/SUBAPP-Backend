@@ -39,7 +39,6 @@ export async function routes(fastify: FastifyInstance) {
 
   // Admin module routes
   await fastify.register(adminRoutes, { prefix: '/api/admin' });
-  await fastify.register(adminRoutes, { prefix: '/api/admin' })
 
   // Passengers routes
   await fastify.register(passengersRoutes, { prefix: '/api' })
@@ -58,7 +57,6 @@ export async function routes(fastify: FastifyInstance) {
 
   // Pasaje routes
   await fastify.register(busFareRoutes, { prefix: '/api/pasajes' });
-  await fastify.register(busFareRoutes, { prefix: '/api/pasajes' })
 
   // Conductores routes
   await fastify.register(driversRoutes, { prefix: '/api/conductores' })
