@@ -19,6 +19,7 @@ import { adminRoutes } from "./admin/index.js";
 import { currentUserRoute } from "./auth/me.js";
 import supportRoutes from "./support/index.js";
 import { profileRoutes } from "./auth/profile.routes.js";
+import { abordajeRoutes } from './abordaje/abordaje.routes';
 import { discountRoutes } from "./discount.routes.js";
 import { nfcRoutes } from './nfc/nfc.routes';
 import { walletRoutes } from './wallet/wallet.routes.js'
@@ -66,6 +67,10 @@ export async function routes(fastify: FastifyInstance) {
 
   // Support routes
   await fastify.register(supportRoutes, { prefix: '/api' });
+
+
+  // Abordaje routes (pago con NFC, QR, historial, etc.)
+  fastify.register(abordajeRoutes, { prefix: '/api/abordaje' });
   await fastify.register(discountRoutes, { prefix: '/api/discounts' });
 
     // NFC routes
