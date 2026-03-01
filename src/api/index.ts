@@ -67,9 +67,9 @@ export async function routes(fastify: FastifyInstance) {
   // Support routes
   await fastify.register(supportRoutes, { prefix: '/api' })
 
-  // 👉 Tus rutas de NFC
+  // nfc routes
   await fastify.register(nfcRoutes, { prefix: '/api/nfc' })
 
-  // 👉 Las rutas de la billetera de tus compañeros
+  // wallet routes
   await fastify.register(walletRoutes, { prefix: '/api/wallet' })
 }
