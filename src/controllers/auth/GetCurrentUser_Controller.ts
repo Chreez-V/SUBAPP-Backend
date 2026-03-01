@@ -55,7 +55,14 @@ case 'admin':
           fullName: currentUser.fullName || currentUser.name,
           role: user.role,
           profilePictureUrl: currentUser.profilePictureUrl || null,
-          ...(user.role === 'passenger' && { credit: currentUser.credit }),
+          ...(user.role === 'passenger' && { 
+            credit: currentUser.credit,
+            cedula: currentUser.cedula || null,
+            birthDate: currentUser.birthDate || null,
+            phone: currentUser.phone || null,
+            idDocumentImageUrl: currentUser.idDocumentImageUrl || null,
+            isProfileComplete: currentUser.isProfileComplete ?? false,
+          }),
           ...(user.role === 'driver' && { 
             licenseNumber: currentUser.licenseNumber,
             phone: currentUser.phone,
