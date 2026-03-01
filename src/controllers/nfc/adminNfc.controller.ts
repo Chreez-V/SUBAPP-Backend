@@ -1,9 +1,12 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { NfcCardRequest } from '../../models/nfcCardRequest'
-import { NfcCard } from '../../models/nfcCard'
+import { NfcCardRequest } from '../../models/nfcCardRequest.js'
+import { NfcCard } from '../../models/nfcCard.js'
+import { PaymentValidation } from '../../models/paymentValidation.js'; 
 
 export interface JwtPayload {
-    _id: string;
+    userId?: string;
+    _id?: string;
+    id?: string;
     role: string;
 }
 
@@ -43,6 +46,7 @@ export const obtenerSolicitudPorId = async (req: FastifyRequest, res: FastifyRep
 export const aprobarSolicitud = async (req: FastifyRequest, res: FastifyReply) => {
     try {
     const admin = req.user as JwtPayload;
+    const adminId = admin.userId || admin._id || admin.id;
     const { id } = req.params as { id: string };
 
     const solicitud = await NfcCardRequest.findById(id);
@@ -54,11 +58,19 @@ export const aprobarSolicitud = async (req: FastifyRequest, res: FastifyReply) =
         return res.status(400).send({ message: `No se puede aprobar. Estado actual: ${solicitud.status}` });
     }
 
-    // HUECO PARA EL CÓDIGO DE SEBASTIÁN
-    // Aquí, cuando él termine, buscaremos el PaymentValidation asociado y lo pasaremos a "aprobado".
+    // Aprobamos también el pago en la billetera
+    if (solicitud.paymentValidationId) {
+        const pago = await PaymentValidation.findById(solicitud.paymentValidationId);
+        if (pago) {
+            pago.status = 'aprobado';
+            pago.reviewedBy = adminId as any;
+            pago.reviewedAt = new Date();
+            await pago.save();
+        }
+    }
     
     solicitud.status = 'aprobada';
-    solicitud.reviewedBy = admin._id as any; // Guardamos qué admin lo aprobó
+    solicitud.reviewedBy = adminId as any; // Guardamos qué admin lo aprobó
     solicitud.reviewedAt = new Date();
     await solicitud.save();
 
@@ -73,6 +85,7 @@ export const aprobarSolicitud = async (req: FastifyRequest, res: FastifyReply) =
 export const rechazarSolicitud = async (req: FastifyRequest, res: FastifyReply) => {
     try {
     const admin = req.user as JwtPayload;
+    const adminId = admin.userId || admin._id || admin.id;
     const { id } = req.params as { id: string };
     const { rejectionReason } = req.body as { rejectionReason: string };
 
@@ -81,9 +94,21 @@ export const rechazarSolicitud = async (req: FastifyRequest, res: FastifyReply) 
         return res.status(404).send({ message: 'Solicitud no encontrada.' });
     }
 
+    // Rechazamos el pago en la billetera 
+    if (solicitud.paymentValidationId) {
+        const pago = await PaymentValidation.findById(solicitud.paymentValidationId);
+        if (pago) {
+            pago.status = 'rechazado';
+            pago.rejectionReason = rejectionReason;
+            pago.reviewedBy = adminId as any;
+            pago.reviewedAt = new Date();
+            await pago.save();
+        }
+    }
+
     solicitud.status = 'rechazada';
     solicitud.rejectionReason = rejectionReason;
-    solicitud.reviewedBy = admin._id as any;
+    solicitud.reviewedBy = adminId as any;
     solicitud.reviewedAt = new Date();
     await solicitud.save();
 

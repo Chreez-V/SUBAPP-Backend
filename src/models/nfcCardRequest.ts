@@ -22,7 +22,6 @@ const NfcCardRequestSchema = new Schema<INfcCardRequest>(
         enum: ['pendiente_pago', 'pendiente_revision', 'aprobada', 'vinculada', 'rechazada'],
         default: 'pendiente_pago',
     },
-    // Esto se reemplazará con la parte de Sebastian que maneja la validación de pagos
     paymentValidationId: { type: Schema.Types.ObjectId, ref: 'PaymentValidation' },
     emissionAmount: { type: Number, required: true, default: 50 },
     reviewedBy: { type: Schema.Types.ObjectId, ref: 'Admin' },
