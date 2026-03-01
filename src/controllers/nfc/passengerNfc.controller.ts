@@ -2,9 +2,10 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { NfcCardRequest } from '../../models/nfcCardRequest'
 import { NfcCard } from '../../models/nfcCard'
 
-// 1. Definimos la forma exacta del Token JWT
 export interface JwtPayload {
-    userId: string; 
+    userId?: string;
+    _id?: string;
+    id?: string;
     role: string;
 }
 
@@ -12,7 +13,8 @@ export interface JwtPayload {
 export const solicitarTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
     try {
     const user = req.user as JwtPayload;
-    const userId = user.userId; 
+    // 👇 Buscamos en todas las variables posibles
+    const userId = user.userId || user._id || user.id; 
 
     if (!userId) {
         return res.status(401).send({ message: 'Error: El token no contiene el ID del usuario.' });
@@ -54,7 +56,7 @@ export const solicitarTarjeta = async (req: FastifyRequest, res: FastifyReply) =
 export const pagarTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
     try {
     const user = req.user as JwtPayload;
-    const userId = user.userId;
+    const userId = user.userId || user._id || user.id;
     
     if (!userId) {
         return res.status(401).send({ message: 'Error de autenticación.' });
@@ -88,7 +90,7 @@ export const pagarTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
 export const vincularTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
     try {
     const user = req.user as JwtPayload;
-    const userId = user.userId;
+    const userId = user.userId || user._id || user.id;
 
     if (!userId) {
         return res.status(401).send({ message: 'Error de autenticación.' });
@@ -136,7 +138,7 @@ export const vincularTarjeta = async (req: FastifyRequest, res: FastifyReply) =>
 export const verMiTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
     try {
     const user = req.user as JwtPayload;
-    const userId = user.userId;
+    const userId = user.userId || user._id || user.id;
 
     if (!userId) {
         return res.status(401).send({ message: 'Error de autenticación.' });
@@ -159,7 +161,7 @@ export const verMiTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
 export const bloquearMiTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
     try {
     const user = req.user as JwtPayload;
-    const userId = user.userId;
+    const userId = user.userId || user._id || user.id;
 
     if (!userId) {
         return res.status(401).send({ message: 'Error de autenticación.' });
