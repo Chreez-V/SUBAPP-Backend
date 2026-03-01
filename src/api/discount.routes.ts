@@ -2,10 +2,21 @@ import { FastifyInstance } from 'fastify';
 import * as z from "zod";
 import isAuth from '../middlewares/isAuth.js';
 import { createDiscount, deleteDiscount, getDiscount, getDiscounts, updateDiscount } from '../controllers/discounts/discount.controller.js';
+import { UploadDocumentController } from '../controllers/discounts/UploadDocumentController.js';
 import { createDiscountSchema } from '../validators/discount.schema.js';
 import { requireAdmin } from '../middlewares/requireAdmin.js';
 
 export async function discountRoutes(fastify: FastifyInstance) {
+	fastify.post('/upload', {
+		preHandler: [isAuth],
+		schema: {
+			tags: ['Descuentos'],
+			description: 'Sube un documento de subsidio a Supabase Storage. Requiere autenticación.',
+			summary: 'Subir documento de subsidio',
+			security: [{ bearerAuth: [] }]
+		}
+	}, UploadDocumentController.upload);
+
 	fastify.post('/', {
 		preHandler: [isAuth],
 		schema: {
