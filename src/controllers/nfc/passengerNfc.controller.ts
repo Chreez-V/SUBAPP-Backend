@@ -1,18 +1,21 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { NfcCardRequest } from '../../models/nfcCardRequest.js'
 import { NfcCard } from '../../models/nfcCard.js'
+import { PaymentValidation } from '../../models/paymentValidation.js';
 
-// 1. Definimos la forma exacta del Token JWT
 export interface JwtPayload {
-  id: string;
-  role: string;
+    userId?: string;
+    _id?: string;
+    id?: string;
+    role: string;
 }
 
 // 2. Endpoint: Iniciar la solicitud de una tarjeta NFC
 export const solicitarTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
   try {
     const user = req.user as JwtPayload;
-    const userId = user.id;
+    // Buscamos en todas las variables posibles
+    const userId = user.userId || user._id || user.id; 
 
     if (!userId) {
       return res.status(401).send({ message: 'Error: El token no contiene el ID del usuario.' });
@@ -54,8 +57,8 @@ export const solicitarTarjeta = async (req: FastifyRequest, res: FastifyReply) =
 export const pagarTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
   try {
     const user = req.user as JwtPayload;
-    const userId = user.id;
-
+    const userId = user.userId || user._id || user.id;
+    
     if (!userId) {
       return res.status(401).send({ message: 'Error de autenticación.' });
     }
@@ -67,18 +70,27 @@ export const pagarTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
       return res.status(404).send({ message: 'No tienes ninguna solicitud pendiente de pago.' })
     }
 
-    // CÓDIGO DE SEBASTIÁN (PaymentValidation)
-    // const pago = await PaymentValidation.create({ userId, reference, amount: 50 })
-    // solicitud.paymentValidationId = pago._id
+    //Adaptado al modelo PaymentValidation
+    const pago = await PaymentValidation.create({ 
+        userId: userId, 
+        type: 'pago_tarjeta_nfc',       
+        referenciaPago: reference,      
+        monto: 50,                      
+        status: 'pendiente',            
+        nfcRequestId: solicitud._id     
+    });
 
-    solicitud.status = 'pendiente_revision'
-    await solicitud.save()
+    // Enlazamos el ID de ese pago a la solicitud
+    solicitud.paymentValidationId = pago._id;
+    solicitud.status = 'pendiente_revision';
+    await solicitud.save();
 
-    return res.status(200).send({
-      message: 'Pago registrado (simulado). En espera de revisión por un administrador.',
-      solicitud
-    })
-  } catch (error) {
+    return res.status(200).send({ 
+        message: 'Pago registrado exitosamente. En espera de revisión por un administrador.', 
+        solicitud,
+        pago // Opcional: para ver la transacción creada en la respuesta
+    });
+    } catch (error) {
     console.error('Error en pagarTarjeta:', error)
     return res.status(500).send({ message: 'Error interno del servidor', error })
   }
@@ -88,7 +100,7 @@ export const pagarTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
 export const vincularTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
   try {
     const user = req.user as JwtPayload;
-    const userId = user.id;
+    const userId = user.userId || user._id || user.id;
 
     if (!userId) {
       return res.status(401).send({ message: 'Error de autenticación.' });
@@ -136,7 +148,7 @@ export const vincularTarjeta = async (req: FastifyRequest, res: FastifyReply) =>
 export const verMiTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
   try {
     const user = req.user as JwtPayload;
-    const userId = user.id;
+    const userId = user.userId || user._id || user.id;
 
     if (!userId) {
       return res.status(401).send({ message: 'Error de autenticación.' });
@@ -159,7 +171,7 @@ export const verMiTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
 export const bloquearMiTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
   try {
     const user = req.user as JwtPayload;
-    const userId = user.id;
+    const userId = user.userId || user._id || user.id;
 
     if (!userId) {
       return res.status(401).send({ message: 'Error de autenticación.' });
