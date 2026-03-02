@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { User } from '../../models/user'
-import { Transaction } from '../../models/transaction'
-import { transferirSchema } from '@/validators/wallet.schema'
+import { User } from '../../models/user.js'
+import { Transaction } from '../../models/transaction.js'
+import { transferirSchema } from '../../validators/wallet.schema.js'
 
 export async function transferirSaldo(
   request: FastifyRequest,

@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { User } from '../../models/user'
-import { Driver } from '../../models/driver' // ¡Importamos también el modelo Driver!
+import { User } from '../../models/user.js'
+import { Driver } from '../../models/driver.js' // ¡Importamos también el modelo Driver!
 
 export async function getSaldo(request: FastifyRequest, reply: FastifyReply) {
   try {

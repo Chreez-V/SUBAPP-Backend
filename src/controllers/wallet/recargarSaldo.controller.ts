@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { User } from '@/models/user'
-import { PaymentValidation } from '@/models/paymentValidation'
-import { recargarSchema } from '@/validators/wallet.schema'
+import { User } from '../../models/user.js'
+import { PaymentValidation } from '../../models/paymentValidation.js'
+import { recargarSchema } from '../../validators/wallet.schema.js'
 import { z } from 'zod'
 
 export async function recargarSaldo(

@@ -20,6 +20,11 @@ import { currentUserRoute } from './auth/me.js';
 import supportRoutes from './support/index.js';
 import { profileRoutes } from './auth/profile.routes.js';
 
+import { collectorRoutes } from "./busCollector/busCollector.routes.js";
+import { abordajeRoutes } from './abordaje/abordaje.routes.js';
+import { discountRoutes } from "./discount.routes.js";
+import { busRoutes } from './buses/buses.routes.js';
+
 import { nfcRoutes } from './nfc/nfc.routes.js';
 import { walletRoutes } from './wallet/wallet.routes.js';
 
@@ -38,7 +43,7 @@ export async function routes(fastify: FastifyInstance) {
   await fastify.register(profileRoutes, { prefix: '/auth' })
 
   // Admin module routes
-  await fastify.register(adminRoutes, { prefix: '/api/admin' })
+  await fastify.register(adminRoutes, { prefix: '/api/admin' });
 
   // Passengers routes
   await fastify.register(passengersRoutes, { prefix: '/api' })
@@ -56,10 +61,13 @@ export async function routes(fastify: FastifyInstance) {
   await fastify.register(reportsRoutes, { prefix: '/api' })
 
   // Pasaje routes
-  await fastify.register(busFareRoutes, { prefix: '/api/pasajes' })
+  await fastify.register(busFareRoutes, { prefix: '/api/pasajes' });
 
   // Conductores routes
   await fastify.register(driversRoutes, { prefix: '/api/conductores' })
+
+  //Colectores routes
+  await fastify.register(collectorRoutes, {prefix: '/api/colectores'})
 
   // Viajes routes
   await fastify.register(tripRoutes, { prefix: '/api/viajes' })
@@ -67,9 +75,12 @@ export async function routes(fastify: FastifyInstance) {
   // Support routes
   await fastify.register(supportRoutes, { prefix: '/api' })
 
-  // nfc routes
-  await fastify.register(nfcRoutes, { prefix: '/api/nfc' })
+  // Rutas de Descuentos y Abordaje
+  await fastify.register(discountRoutes, { prefix: '/api/descuentos' })
+  await fastify.register(abordajeRoutes, { prefix: '/api/abordaje' })
+  await fastify.register(busRoutes, { prefix: '/api/autobuses' })
 
-  // wallet routes
-  await fastify.register(walletRoutes, { prefix: '/api/wallet' })
+  // rutas de NFC e Integración con Billetera
+  await fastify.register(nfcRoutes, { prefix: '/api/nfc' })
+  await fastify.register(walletRoutes, { prefix: '/api/wallet' }) 
 }

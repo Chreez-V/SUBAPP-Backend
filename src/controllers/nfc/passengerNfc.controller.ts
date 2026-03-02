@@ -12,62 +12,62 @@ export interface JwtPayload {
 
 // 2. Endpoint: Iniciar la solicitud de una tarjeta NFC
 export const solicitarTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
-    try {
+  try {
     const user = req.user as JwtPayload;
     // Buscamos en todas las variables posibles
     const userId = user.userId || user._id || user.id; 
 
     if (!userId) {
-        return res.status(401).send({ message: 'Error: El token no contiene el ID del usuario.' });
+      return res.status(401).send({ message: 'Error: El token no contiene el ID del usuario.' });
     }
 
     const tarjetaActiva = await NfcCard.findOne({ userId, status: 'activa' })
     if (tarjetaActiva) {
-        return res.status(400).send({ message: 'Ya posees una tarjeta NFC activa.' })
+      return res.status(400).send({ message: 'Ya posees una tarjeta NFC activa.' })
     }
 
     const solicitudPendiente = await NfcCardRequest.findOne({
-        userId,
-        status: { $in: ['pendiente_pago', 'pendiente_revision', 'aprobada'] }
+      userId,
+      status: { $in: ['pendiente_pago', 'pendiente_revision', 'aprobada'] }
     })
     if (solicitudPendiente) {
-        return res.status(400).send({ 
-        message: 'Ya tienes una solicitud en proceso.', 
-        estadoActual: solicitudPendiente.status 
-        })
+      return res.status(400).send({
+        message: 'Ya tienes una solicitud en proceso.',
+        estadoActual: solicitudPendiente.status
+      })
     }
 
     const nuevaSolicitud = await NfcCardRequest.create({
-        userId,
-        status: 'pendiente_pago',
-        emissionAmount: 50 
+      userId,
+      status: 'pendiente_pago',
+      emissionAmount: 50
     })
 
-    return res.status(201).send({ 
-        message: 'Solicitud creada con éxito. Por favor, procede a registrar tu pago.', 
-        solicitud: nuevaSolicitud 
+    return res.status(201).send({
+      message: 'Solicitud creada con éxito. Por favor, procede a registrar tu pago.',
+      solicitud: nuevaSolicitud
     })
-    } catch (error) {
+  } catch (error) {
     console.error('Error en solicitarTarjeta:', error)
     return res.status(500).send({ message: 'Error interno del servidor', error })
-    }
+  }
 }
 
 // 3. Endpoint: Reportar el pago del plástico
 export const pagarTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
-    try {
+  try {
     const user = req.user as JwtPayload;
     const userId = user.userId || user._id || user.id;
     
     if (!userId) {
-        return res.status(401).send({ message: 'Error de autenticación.' });
+      return res.status(401).send({ message: 'Error de autenticación.' });
     }
 
     const { reference } = req.body as { reference: string };
 
     const solicitud = await NfcCardRequest.findOne({ userId, status: 'pendiente_pago' })
     if (!solicitud) {
-        return res.status(404).send({ message: 'No tienes ninguna solicitud pendiente de pago.' })
+      return res.status(404).send({ message: 'No tienes ninguna solicitud pendiente de pago.' })
     }
 
     //Adaptado al modelo PaymentValidation
@@ -93,40 +93,40 @@ export const pagarTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
     } catch (error) {
     console.error('Error en pagarTarjeta:', error)
     return res.status(500).send({ message: 'Error interno del servidor', error })
-    }
+  }
 }
 
 // 4. Endpoint: Vincular la tarjeta física con la cuenta
 export const vincularTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
-    try {
+  try {
     const user = req.user as JwtPayload;
     const userId = user.userId || user._id || user.id;
 
     if (!userId) {
-        return res.status(401).send({ message: 'Error de autenticación.' });
+      return res.status(401).send({ message: 'Error de autenticación.' });
     }
 
     const { cardUid } = req.body as { cardUid: string };
 
     const solicitud = await NfcCardRequest.findOne({ userId, status: 'aprobada' });
     if (!solicitud) {
-        return res.status(400).send({ 
-        message: 'No tienes una solicitud aprobada lista para vincular. Revisa el estado de tu trámite.' 
-        });
+      return res.status(400).send({
+        message: 'No tienes una solicitud aprobada lista para vincular. Revisa el estado de tu trámite.'
+      });
     }
 
     const tarjetaExistente = await NfcCard.findOne({ cardUid });
     if (tarjetaExistente) {
-        return res.status(400).send({ 
-        message: 'Esta tarjeta física ya se encuentra registrada en el sistema.' 
-        });
+      return res.status(400).send({
+        message: 'Esta tarjeta física ya se encuentra registrada en el sistema.'
+      });
     }
 
     const nuevaTarjeta = await NfcCard.create({
-        cardUid,
-        userId,
-        status: 'activa',
-        requestId: solicitud._id
+      cardUid,
+      userId,
+      status: 'activa',
+      requestId: solicitud._id
     });
 
     solicitud.status = 'vinculada';
@@ -134,66 +134,66 @@ export const vincularTarjeta = async (req: FastifyRequest, res: FastifyReply) =>
     solicitud.linkedAt = new Date();
     await solicitud.save();
 
-    return res.status(200).send({ 
-        message: '¡Tarjeta vinculada con éxito! Ya puedes usarla para pagar tus pasajes.',
-        tarjeta: nuevaTarjeta 
+    return res.status(200).send({
+      message: '¡Tarjeta vinculada con éxito! Ya puedes usarla para pagar tus pasajes.',
+      tarjeta: nuevaTarjeta
     });
-    } catch (error) {
+  } catch (error) {
     console.error('Error en vincularTarjeta:', error);
     return res.status(500).send({ message: 'Error interno del servidor', error });
-    }
+  }
 }
 
 // 5. Endpoint: Ver mi tarjeta activa
 export const verMiTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
-    try {
+  try {
     const user = req.user as JwtPayload;
     const userId = user.userId || user._id || user.id;
 
     if (!userId) {
-        return res.status(401).send({ message: 'Error de autenticación.' });
+      return res.status(401).send({ message: 'Error de autenticación.' });
     }
 
     const tarjeta = await NfcCard.findOne({ userId, status: 'activa' }).select('-__v');
-    
+
     if (!tarjeta) {
-        return res.status(404).send({ message: 'No posees ninguna tarjeta activa en este momento.' });
+      return res.status(404).send({ message: 'No posees ninguna tarjeta activa en este momento.' });
     }
 
     return res.status(200).send({ tarjeta });
-    } catch (error) {
+  } catch (error) {
     console.error('Error en verMiTarjeta:', error);
     return res.status(500).send({ message: 'Error interno del servidor', error });
-    }
+  }
 }
 
 // 6. Endpoint: Bloquear tarjeta
 export const bloquearMiTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
-    try {
+  try {
     const user = req.user as JwtPayload;
     const userId = user.userId || user._id || user.id;
 
     if (!userId) {
-        return res.status(401).send({ message: 'Error de autenticación.' });
+      return res.status(401).send({ message: 'Error de autenticación.' });
     }
 
     const { blockedReason } = req.body as { blockedReason?: string };
 
     const tarjeta = await NfcCard.findOne({ userId, status: 'activa' });
     if (!tarjeta) {
-        return res.status(404).send({ message: 'No tienes una tarjeta activa para bloquear.' });
+      return res.status(404).send({ message: 'No tienes una tarjeta activa para bloquear.' });
     }
 
     tarjeta.status = 'bloqueada';
     tarjeta.blockedReason = blockedReason || 'Bloqueada por el usuario desde la app';
     await tarjeta.save();
 
-    return res.status(200).send({ 
-        message: 'Tu tarjeta ha sido bloqueada exitosamente por seguridad.',
-        tarjeta 
+    return res.status(200).send({
+      message: 'Tu tarjeta ha sido bloqueada exitosamente por seguridad.',
+      tarjeta
     });
-    } catch (error) {
+  } catch (error) {
     console.error('Error en bloquearMiTarjeta:', error);
     return res.status(500).send({ message: 'Error interno del servidor', error });
-    }
+  }
 }

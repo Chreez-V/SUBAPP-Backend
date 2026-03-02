@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { PaymentValidation } from '../../models/paymentValidation'
-import { User } from '../../models/user'
-import { Transaction } from '../../models/transaction'
+import { PaymentValidation } from '../../models/paymentValidation.js'
+import { User } from '../../models/user.js'
+import { Transaction } from '../../models/transaction.js'
 
 interface PaymentParams {
   id: string
