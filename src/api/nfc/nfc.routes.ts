@@ -16,7 +16,8 @@ import {
     obtenerSolicitudPorId,
     aprobarSolicitud,
     rechazarSolicitud,
-    bloquearTarjetaAdmin
+    bloquearTarjetaAdmin,
+    obtenerUsuariosNfc
 } from '../../controllers/nfc/adminNfc.controller.js'
 
 // Filtro de seguridad rápido para verificar si es Admin
@@ -48,7 +49,33 @@ const nfcRequestSchema = {
   type: 'object',
   properties: {
     _id:              { type: 'string', description: 'ID de la solicitud (ObjectId)' },
-    userId:           { type: 'string', description: 'ID del pasajero (se popula con fullName y email)' },
+    userId:           { type: 'string', description: 'ID del pasajero' },
+    status:           { type: 'string', enum: ['pendiente_pago', 'pendiente_revision', 'aprobada', 'rechazada', 'vinculada'], description: 'Estado actual de la solicitud' },
+    emissionAmount:   { type: 'number', description: 'Costo de emisión de la tarjeta', example: 50 },
+    rejectionReason:  { type: 'string', nullable: true, description: 'Motivo de rechazo (si fue rechazada)' },
+    reviewedBy:       { type: 'string', nullable: true, description: 'ID del administrador que revisó' },
+    reviewedAt:       { type: 'string', format: 'date-time', nullable: true, description: 'Fecha de revisión' },
+    linkedCardUid:    { type: 'string', nullable: true, description: 'UID de la tarjeta vinculada (si ya se vinculó)' },
+    linkedAt:         { type: 'string', format: 'date-time', nullable: true, description: 'Fecha de vinculación' },
+    createdAt:        { type: 'string', format: 'date-time' },
+    updatedAt:        { type: 'string', format: 'date-time' },
+  },
+} as const;
+
+// Schema para respuestas admin donde userId está populado con {_id, fullName, email}
+const nfcRequestPopulatedSchema = {
+  type: 'object',
+  properties: {
+    _id:              { type: 'string', description: 'ID de la solicitud (ObjectId)' },
+    userId: {
+      type: 'object',
+      description: 'Datos del pasajero (populado)',
+      properties: {
+        _id:      { type: 'string', description: 'ID del pasajero' },
+        fullName: { type: 'string', description: 'Nombre completo' },
+        email:    { type: 'string', description: 'Correo electrónico' },
+      },
+    },
     status:           { type: 'string', enum: ['pendiente_pago', 'pendiente_revision', 'aprobada', 'rechazada', 'vinculada'], description: 'Estado actual de la solicitud' },
     emissionAmount:   { type: 'number', description: 'Costo de emisión de la tarjeta', example: 50 },
     rejectionReason:  { type: 'string', nullable: true, description: 'Motivo de rechazo (si fue rechazada)' },
@@ -277,7 +304,7 @@ export async function nfcRoutes(fastify: FastifyInstance) {
           properties: {
             solicitudes: {
               type: 'array',
-              items: nfcRequestSchema,
+              items: nfcRequestPopulatedSchema,
               description: 'Lista de solicitudes (userId populado con fullName y email)',
             },
           },
@@ -312,7 +339,7 @@ export async function nfcRoutes(fastify: FastifyInstance) {
           description: 'Detalle de la solicitud',
           type: 'object',
           properties: {
-            solicitud: nfcRequestSchema,
+            solicitud: nfcRequestPopulatedSchema,
           },
         },
         404: {
@@ -452,5 +479,49 @@ export async function nfcRoutes(fastify: FastifyInstance) {
       },
     },
   }, bloquearTarjetaAdmin)
+
+  // GET /api/nfc/usuarios
+  fastify.get('/usuarios', {
+    preHandler: [isAuth, isAdmin],
+    schema: {
+      tags: ['Tarjetas NFC'],
+      summary: 'Listar usuarios con su estatus NFC',
+      description:
+        'Devuelve todos los pasajeros con su campo nfcStatus para saber quién tiene tarjeta NFC activa, '
+        + 'quién tiene solicitud pendiente y quién no ha solicitado. Requiere rol administrador.',
+      security: [{ bearerAuth: [] }],
+      response: {
+        200: {
+          description: 'Lista de usuarios con estatus NFC',
+          type: 'object',
+          properties: {
+            usuarios: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  _id: { type: 'string' },
+                  fullName: { type: 'string' },
+                  email: { type: 'string' },
+                  nfcStatus: { type: 'string', enum: ['none', 'pending_payment', 'pending_review', 'approved', 'active', 'rejected'] },
+                  cedula: { type: 'string', nullable: true },
+                  phone: { type: 'string', nullable: true },
+                  createdAt: { type: 'string', format: 'date-time' },
+                },
+              },
+            },
+          },
+        },
+        403: {
+          description: 'Acceso denegado — requiere rol administrador',
+          ...errorSchema,
+        },
+        500: {
+          description: 'Error interno del servidor',
+          ...errorSchema,
+        },
+      },
+    },
+  }, obtenerUsuariosNfc)
 
 }
