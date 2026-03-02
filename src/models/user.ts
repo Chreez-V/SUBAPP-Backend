@@ -23,6 +23,9 @@ export interface IUser extends Document {
   idDocumentImageUrl?: string;  // URL de la foto/scan del documento de identidad
   isProfileComplete: boolean;   // true cuando cedula + birthDate + phone están presentes
 
+  // ✅ NFC — Estado de la tarjeta NFC del usuario
+  nfcStatus: 'none' | 'pending_payment' | 'pending_review' | 'approved' | 'active' | 'rejected';
+
   // ✅ CAMPOS PARA EL RESETEO DE CONTRASEÑA
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
@@ -98,6 +101,13 @@ const UserSchema = new Schema<IUser>(
     isProfileComplete: {
       type: Boolean,
       default: false,
+    },
+
+    // ✅ NFC — Estado de la tarjeta NFC del usuario
+    nfcStatus: {
+      type: String,
+      enum: ['none', 'pending_payment', 'pending_review', 'approved', 'active', 'rejected'],
+      default: 'none',
     },
 
     // ✅ CAMPOS PARA EL RESETEO DE CONTRASEÑA

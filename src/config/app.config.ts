@@ -14,6 +14,12 @@ export async function app() {
         target: "pino-pretty",
       }
     },
+    ajv: {
+      customOptions: {
+        // Allow OpenAPI/Swagger keywords that AJV strict mode rejects
+        keywords: ['example'],
+      },
+    },
   });
 
   // ✅ Multipart Configuration

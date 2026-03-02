@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { NfcCardRequest } from '../../models/nfcCardRequest.js'
 import { NfcCard } from '../../models/nfcCard.js'
+import { User } from '../../models/user.js'
 
 export interface JwtPayload {
     _id: string;
@@ -62,6 +63,9 @@ export const aprobarSolicitud = async (req: FastifyRequest, res: FastifyReply) =
     solicitud.reviewedAt = new Date();
     await solicitud.save();
 
+    // Actualizar nfcStatus del usuario
+    await User.findByIdAndUpdate(solicitud.userId, { nfcStatus: 'approved' })
+
     return res.status(200).send({ message: 'Solicitud aprobada exitosamente.', solicitud });
     } catch (error) {
     console.error('Error en aprobarSolicitud:', error);
@@ -87,6 +91,9 @@ export const rechazarSolicitud = async (req: FastifyRequest, res: FastifyReply) 
     solicitud.reviewedAt = new Date();
     await solicitud.save();
 
+    // Actualizar nfcStatus del usuario
+    await User.findByIdAndUpdate(solicitud.userId, { nfcStatus: 'rejected' })
+
     return res.status(200).send({ message: 'Solicitud rechazada.', solicitud });
     } catch (error) {
     console.error('Error en rechazarSolicitud:', error);
@@ -109,9 +116,27 @@ export const bloquearTarjetaAdmin = async (req: FastifyRequest, res: FastifyRepl
     tarjeta.blockedReason = blockedReason || 'Bloqueada por un administrador.';
     await tarjeta.save();
 
+    // Actualizar nfcStatus del usuario
+    await User.findByIdAndUpdate(tarjeta.userId, { nfcStatus: 'none' })
+
     return res.status(200).send({ message: 'Tarjeta bloqueada exitosamente por el administrador.', tarjeta });
     } catch (error) {
     console.error('Error en bloquearTarjetaAdmin:', error);
     return res.status(500).send({ message: 'Error interno del servidor', error });
+    }
+}
+
+// 6. Obtener todos los usuarios con su estatus NFC
+export const obtenerUsuariosNfc = async (req: FastifyRequest, res: FastifyReply) => {
+    try {
+        const usuarios = await User.find({ role: 'passenger' })
+            .select('fullName email nfcStatus cedula phone createdAt')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        return res.status(200).send({ usuarios });
+    } catch (error) {
+        console.error('Error en obtenerUsuariosNfc:', error);
+        return res.status(500).send({ message: 'Error interno del servidor', error });
     }
 }

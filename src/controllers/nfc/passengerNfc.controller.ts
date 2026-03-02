@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { NfcCardRequest } from '../../models/nfcCardRequest.js'
 import { NfcCard } from '../../models/nfcCard.js'
+import { User } from '../../models/user.js'
 
 // 1. Definimos la forma exacta del Token JWT
 export interface JwtPayload {
@@ -40,6 +41,9 @@ export const solicitarTarjeta = async (req: FastifyRequest, res: FastifyReply) =
       emissionAmount: 50
     })
 
+    // Actualizar nfcStatus del usuario
+    await User.findByIdAndUpdate(userId, { nfcStatus: 'pending_payment' })
+
     return res.status(201).send({
       message: 'Solicitud creada con éxito. Por favor, procede a registrar tu pago.',
       solicitud: nuevaSolicitud
@@ -73,6 +77,9 @@ export const pagarTarjeta = async (req: FastifyRequest, res: FastifyReply) => {
 
     solicitud.status = 'pendiente_revision'
     await solicitud.save()
+
+    // Actualizar nfcStatus del usuario
+    await User.findByIdAndUpdate(userId, { nfcStatus: 'pending_review' })
 
     return res.status(200).send({
       message: 'Pago registrado (simulado). En espera de revisión por un administrador.',
@@ -121,6 +128,9 @@ export const vincularTarjeta = async (req: FastifyRequest, res: FastifyReply) =>
     solicitud.linkedCardUid = cardUid;
     solicitud.linkedAt = new Date();
     await solicitud.save();
+
+    // Actualizar nfcStatus del usuario a activo
+    await User.findByIdAndUpdate(userId, { nfcStatus: 'active' })
 
     return res.status(200).send({
       message: '¡Tarjeta vinculada con éxito! Ya puedes usarla para pagar tus pasajes.',
@@ -175,6 +185,9 @@ export const bloquearMiTarjeta = async (req: FastifyRequest, res: FastifyReply) 
     tarjeta.status = 'bloqueada';
     tarjeta.blockedReason = blockedReason || 'Bloqueada por el usuario desde la app';
     await tarjeta.save();
+
+    // Actualizar nfcStatus del usuario
+    await User.findByIdAndUpdate(userId, { nfcStatus: 'none' })
 
     return res.status(200).send({
       message: 'Tu tarjeta ha sido bloqueada exitosamente por seguridad.',
