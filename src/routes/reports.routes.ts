@@ -1,4 +1,6 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, RouteShorthandOptions } from 'fastify';
+import isAuth from '../middlewares/isAuth.js';
+import { requireAdmin } from '../middlewares/requireAdmin.js';
 import {
   getAllReports,
   getPendingReports,
@@ -7,7 +9,17 @@ import {
   resolveReport,
   deleteReport,
   getReportReasons,
+  getMovimientoTotalReport,
+  getTransaccionesReport,
+  getCuotaDiariaReport,
+  getCobrosPorConductor,
+  getRecaudoPorRuta,
 } from '../controllers/reports.controller.js';
+
+interface MovimientoTotalQuery {
+  desde: string;
+  hasta: string;
+}
 
 export async function reportsRoutes(fastify: FastifyInstance) {
   // GET - List of valid report reasons (enum)
@@ -36,6 +48,159 @@ export async function reportsRoutes(fastify: FastifyInstance) {
       },
     },
   }, getReportReasons);
+
+  // GET - Total movement report by period
+  const movimientoTotalOpts: RouteShorthandOptions = {
+    schema: {
+      description: 'Retorna el resumen de ingresos y egresos por tipo de transaccion en un periodo.',
+      summary: 'Resumen de movimiento total',
+      tags: ['Reportes'],
+      querystring: {
+        type: 'object',
+        required: ['desde', 'hasta'],
+        properties: {
+          desde: { type: 'string', description: 'Fecha inicio (YYYY-MM-DD)' },
+          hasta: { type: 'string', description: 'Fecha fin (YYYY-MM-DD)' },
+        },
+      },
+    },
+    preHandler: [isAuth, requireAdmin],
+  };
+
+  fastify.get<{
+    Querystring: MovimientoTotalQuery
+  }>('/reportes/movimiento-total', movimientoTotalOpts, getMovimientoTotalReport);
+
+  // GET - List transactions with filters
+  interface TransaccionesQuery {
+    desde?: string;
+    hasta?: string;
+    type?: string;
+    userId?: string;
+    routeId?: string;
+    driverId?: string;
+    tripId?: string;
+    fareType?: string;
+    minAmount?: string;
+    maxAmount?: string;
+    cardUid?: string;
+    description?: string;
+    page?: string;
+    limit?: string;
+    sortBy?: 'createdAt' | 'amount' | 'type';
+    sortDir?: 'asc' | 'desc';
+  }
+
+  fastify.get<{
+    Querystring: TransaccionesQuery
+  }>('/reportes/transacciones', {
+    schema: {
+      description: 'Lista todas las transacciones con filtros opcionales.',
+      summary: 'Listar transacciones con filtros',
+      tags: ['Reportes'],
+      querystring: {
+        type: 'object',
+        properties: {
+          desde: { type: 'string', description: 'Fecha inicio (YYYY-MM-DD)' },
+          hasta: { type: 'string', description: 'Fecha fin (YYYY-MM-DD)' },
+          type: { type: 'string', description: 'Tipo de transaccion' },
+          userId: { type: 'string', description: 'ID del usuario' },
+          routeId: { type: 'string', description: 'ID de la ruta' },
+          driverId: { type: 'string', description: 'ID del conductor' },
+          tripId: { type: 'string', description: 'ID del viaje' },
+          fareType: { type: 'string', description: 'Tipo de tarifa' },
+          minAmount: { type: 'string', description: 'Monto minimo' },
+          maxAmount: { type: 'string', description: 'Monto maximo' },
+          cardUid: { type: 'string', description: 'UID de tarjeta' },
+          description: { type: 'string', description: 'Busqueda por descripcion (parcial)' },
+          page: { type: 'string', description: 'Pagina (default 1)' },
+          limit: { type: 'string', description: 'Limite por pagina (default 50, max 200)' },
+          sortBy: { type: 'string', enum: ['createdAt', 'amount', 'type'] },
+          sortDir: { type: 'string', enum: ['asc', 'desc'] },
+        },
+      },
+    },
+    preHandler: [isAuth, requireAdmin],
+  }, getTransaccionesReport);
+
+  // GET - Daily top-up target
+  interface CuotaDiariaQuery {
+    cuota: string;
+  }
+
+  fastify.get<{
+    Querystring: CuotaDiariaQuery
+  }>('/reportes/cuota-diaria', {
+    schema: {
+      description: 'Retorna el avance de la cuota diaria de recargas.',
+      summary: 'Reporte de cuota diaria',
+      tags: ['Reportes'],
+      querystring: {
+        type: 'object',
+        required: ['cuota'],
+        properties: {
+          cuota: { type: 'string', description: 'Cuota diaria establecida' },
+        },
+      },
+    },
+    preHandler: [isAuth, requireAdmin],
+  }, getCuotaDiariaReport);
+
+  // GET - Accumulated charges by driver
+  interface DriverParams {
+    driverId: string;
+  }
+  interface CobrosPorConductorQuery {
+    desde?: string;
+    hasta?: string;
+  }
+  fastify.get<{
+    Params: DriverParams;
+    Querystring: CobrosPorConductorQuery;
+  }>('/reportes/porconductor/:driverId', {
+    schema: {
+      description: 'Retorna los cobros acumulados por conductor para pagos NFC y QR.',
+      summary: 'Cobros acumulados por conductor',
+      tags: ['Reportes'],
+      querystring: {
+        type: 'object',
+        properties: {
+          desde: { type: 'string', description: 'Fecha inicio (YYYY-MM-DD)' },
+          hasta: { type: 'string', description: 'Fecha fin (YYYY-MM-DD)' },
+        },
+      },
+      params: {
+        type: 'object',
+        properties: {
+          driverId: { type: 'string', description: 'ID del conductor' },
+        },
+        required: ['driverId'],
+      },
+    },
+    preHandler: [isAuth, requireAdmin],
+  }, getCobrosPorConductor);
+
+  // GET - Accumulated charges by route
+  interface RouteParams {
+    routeId: string;
+  }
+  fastify.get<{
+    Params: RouteParams;
+  }>('/reportes/porruta/:routeId', {
+    schema: {
+      description: 'Retorna el recaudo acumulado por ruta para pagos NFC y QR.',
+      summary: 'Recaudo por ruta',
+      tags: ['Reportes'],
+      params: {
+        type: 'object',
+        properties: {
+          routeId: { type: 'string', description: 'ID de la ruta' },
+        },
+        required: ['routeId'],
+      },
+    },
+    preHandler: [isAuth, requireAdmin],
+  }, getRecaudoPorRuta);
 
   // GET - List all reports
   fastify.get('/reportes', {
